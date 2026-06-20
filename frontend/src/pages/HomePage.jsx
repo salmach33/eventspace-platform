@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import SpaceCard from "../components/SpaceCard";
+import ChatIA from "../components/ChatIA";
 
 export default function HomePage() {
   const [spaces, setSpaces] = useState([]);
@@ -73,6 +74,9 @@ export default function HomePage() {
           </>
         )}
       </div>
+
+      {/* Chat IA */}
+      <ChatIA />
     </div>
   );
 }

@@ -13,6 +13,7 @@ const spaceRoutes = require("./routes/spaceRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 dotenv.config();
 connectDB();
@@ -39,6 +40,7 @@ app.use("/api/spaces", spaceRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.get("/", (req, res) => res.send("EventSpace API Running..."));
 
