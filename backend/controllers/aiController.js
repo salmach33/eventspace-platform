@@ -1,138 +1,111 @@
 const { callOllama } = require("../utils/ollamaClient");
+const Space = require("../models/Space");
 
-// UN SEUL ENDPOINT - détecte le type de demande et répond intelligemment
+function detectRequestType(message) {
+  const msg = message.toLowerCase();
+  
+  if (msg.includes("recommand") || msg.includes("quelle salle") || 
+      msg.includes("salle pour") || msg.includes("réserver") ||
+      msg.includes("mariage") || msg.includes("personnes") || msg.includes("budget") ||
+      msg.includes("capacite") || msg.includes("disponible") || msg.includes("prix")) {
+    return "recommendation";
+  }
+  
+  if (msg.includes("comment") || msg.includes("conseil") || 
+      msg.includes("organisation") || msg.includes("organiser")) {
+    return "planning";
+  }
+  
+  if (msg.includes("avis") || msg.includes("résumé") || msg.includes("feedback")) {
+    return "reviews";
+  }
+  
+  if (msg.includes("description") || msg.includes("décrire")) {
+    return "description";
+  }
+  
+  return "general";
+}
+
+async function getRecommendationsWithData(message) {
+  try {
+    // Récupère TOUTES les salles de la base de données
+    const spaces = await Space.find().limit(20);
+    
+    if (spaces.length === 0) {
+      return "Je n'ai pas trouvé de salles dans la base de données.";
+    }
+
+    // Formate les salles pour Ollama
+    const spacesInfo = spaces.map(space => 
+      `- ${space.title}: ${space.capacity} personnes, ${space.price}€/jour, ${space.location}, ${space.amenities?.join(", ") || "N/A"}`
+    ).join("\n");
+
+    console.log(`[Recommendation] ${spaces.length} salles trouvées`);
+
+    // Envoie le contexte réel à Ollama
+    const prompt = `Tu es un expert en location de salles d'événements.
+
+L'utilisateur demande: "${message}"
+
+Voici les salles DISPONIBLES dans notre catalogue:
+${spacesInfo}
+
+Recommande les MEILLEURES salles de cette liste qui correspondent à sa demande.
+Mentionne:
+- Le nom exact de la salle
+- Pourquoi elle convient
+- Le prix et la capacité
+
+Réponds en te basant UNIQUEMENT sur les salles listées ci-dessus.`;
+
+    const response = await callOllama(prompt);
+    return response;
+  } catch (error) {
+    console.error("[Recommendation Error]:", error.message);
+    return `Erreur lors de la recherche de salles: ${error.message}`;
+  }
+}
+
+function generatePrompt(message, type) {
+  switch (type) {
+    case "planning":
+      return `Conseils organisation: ${message}`;
+    case "reviews":
+      return `Résume avis: ${message}`;
+    case "description":
+      return `Description salle: ${message}`;
+    default:
+      return message;
+  }
+}
+
 exports.chat = async (req, res) => {
   try {
     const { message } = req.body;
     
     if (!message || message.trim() === "") {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Message vide" 
-      });
+      return res.status(400).json({ success: false, error: "Message vide" });
     }
 
-    console.log(`[Chat] Reçu: ${message}`);
-    
-    // Détecte le type de demande
+    console.log(`[Chat] Message reçu: ${message}`);
     const type = detectRequestType(message);
     console.log(`[Chat] Type détecté: ${type}`);
     
-    let prompt = generatePrompt(message, type);
-    const response = await callOllama(prompt);
+    let response;
+
+    // Si c'est une recommandation, récupère les données réelles
+    if (type === "recommendation") {
+      response = await getRecommendationsWithData(message);
+    } else {
+      // Pour les autres types, utilise les prompts simples
+      const prompt = generatePrompt(message, type);
+      response = await callOllama(prompt);
+    }
     
-    res.json({ 
-      success: true, 
-      response: response,
-      type: type,
-      timestamp: new Date().toISOString()
-    });
+    res.json({ success: true, response, type });
   } catch (error) {
     console.error("[Chat Error]:", error.message);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
-
-// Détecte le type de demande basé sur les mots-clés
-function detectRequestType(message) {
-  const msg = message.toLowerCase();
-  
-  // Recommandations de salles
-  if (msg.includes("recommand") || msg.includes("quelle salle") || 
-      msg.includes("salle pour") || msg.includes("quel type de salle") ||
-      msg.includes("réserver") || msg.includes("mariage") || 
-      msg.includes("conférence") || msg.includes("anniversaire") ||
-      msg.includes("personnes") || msg.includes("budget") ||
-      msg.includes("événement") || msg.includes("réception")) {
-    return "recommendation";
-  }
-  
-  // Aide organisation événement
-  if (msg.includes("comment") || msg.includes("conseil") || 
-      msg.includes("organisation") || msg.includes("organiser") ||
-      msg.includes("étapes") || msg.includes("tips") ||
-      msg.includes("aide") || msg.includes("astuce")) {
-    return "planning";
-  }
-  
-  // Résumé/analyse d'avis
-  if (msg.includes("avis") || msg.includes("résumé") || 
-      msg.includes("note") || msg.includes("commentaires") ||
-      msg.includes("feedback") || msg.includes("opinion")) {
-    return "reviews";
-  }
-  
-  // Description d'espace
-  if (msg.includes("description") || msg.includes("présentation") ||
-      msg.includes("décrire") || msg.includes("caractéristiques")) {
-    return "description";
-  }
-  
-  // Chat général par défaut
-  return "general";
-}
-
-// Génère le prompt intelligent selon le type
-function generatePrompt(message, type) {
-  switch (type) {
-    case "recommendation":
-      return `Tu es un expert en location de salles d'événements avec 15 ans d'expérience.
-
-L'utilisateur demande: "${message}"
-
-Recommande les TYPES de salles qui conviendraient. Pour chaque type:
-- Explique pourquoi c'est approprié
-- Mentionne les critères importants (taille, équipements, etc)
-- Donne les erreurs à éviter
-
-Sois concis et pratique (100-150 mots).`;
-
-    case "planning":
-      return `Tu es un consultant expert en organisation d'événements avec 15 ans d'expérience.
-
-Question: "${message}"
-
-Donne:
-- Des conseils pratiques et professionnels
-- Des étapes concrètes
-- Des astuces utiles
-- Les erreurs à éviter
-
-Sois concis (100-150 mots).`;
-
-    case "reviews":
-      return `Tu es un analyste de données spécialisé dans les avis clients.
-
-L'utilisateur demande: "${message}"
-
-Résume les avis en identifiant:
-- Les points forts principaux
-- Les domaines à améliorer
-- Les recommandations clés
-
-Sois concis (80-120 mots).`;
-
-    case "description":
-      return `Tu es un expert en marketing pour salles d'événements.
-
-Demande: "${message}"
-
-Génère une description professionnelle et attrayante qui mentionne:
-- Les points forts
-- Les équipements clés
-- L'ambiance générale
-- Qui devrait choisir
-
-Sois concis (80-120 mots).`;
-
-    default:
-      return `Tu es un assistant utile pour les salles d'événements.
-
-L'utilisateur dit: "${message}"
-
-Réponds de manière amicale, concise et pertinente.`;
-  }
-}
