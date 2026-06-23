@@ -2,50 +2,58 @@ const axios = require("axios");
 
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "mistral";
+const OLLAMA_TIMEOUT_MS = Number(process.env.OLLAMA_TIMEOUT_MS) || 180000;
 
-console.log(`[Ollama Config] URL: ${OLLAMA_URL}, Model: ${OLLAMA_MODEL}`);
+console.log(`[Ollama] URL: ${OLLAMA_URL}, Model: ${OLLAMA_MODEL}`);
 
 async function callOllama(prompt) {
-  try {
-    console.log(`[Ollama] Envoi prompt au modèle: ${OLLAMA_MODEL}`);
-    console.log(`[Ollama] Prompt length: ${prompt.length}`);
-    
-    // Test de connexion d'abord
-    try {
-      await axios.get(`${OLLAMA_URL}/api/tags`, { timeout: 5000 });
-      console.log(`[Ollama] Connexion OK`);
-    } catch (err) {
-      throw new Error(`Ollama ne répond pas. Vérifiez: ollama serve`);
-    }
+  const startTime = Date.now();
 
-    const startTime = Date.now();
+  try {
     const response = await axios.post(
       `${OLLAMA_URL}/api/generate`,
       {
         model: OLLAMA_MODEL,
         prompt: prompt,
         stream: false,
+        keep_alive: "30m", // évite de recharger le modèle en mémoire à chaque requête (~15s de pénalité en CPU)
+        options: {
+          num_predict: 350, // bride la longueur de réponse pour rester sous le timeout en inférence CPU
+        },
       },
       {
-        timeout: 300000, // 5 minutes au lieu de 2
+        timeout: OLLAMA_TIMEOUT_MS,
       }
     );
 
-    const duration = Date.now() - startTime;
-    console.log(`[Ollama] Réponse reçue en ${duration}ms`);
+    console.log(`[Ollama] Réponse en ${Date.now() - startTime}ms`);
 
-    const text = response.data.response || "";
-    return text.trim();
+    const text = response.data?.response?.trim() || "";
+    return text || "Désolé, je n'ai pas pu générer de réponse. Reformulez votre question.";
   } catch (error) {
     console.error(`[Ollama Error] ${error.message}`);
-    
-    // Fallback si Ollama est lent ou ne répond pas
-    if (error.message.includes("timeout") || error.code === "ECONNREFUSED") {
-      return "Je suis désolé, Ollama met trop de temps. Vérifiez qu'Ollama est lancé avec 'ollama serve' dans un terminal.";
+
+    if (error.code === "ECONNABORTED" || error.message.includes("timeout")) {
+      return "Réponse trop lente. Réessayez dans quelques secondes.";
     }
-    
+
+    if (error.code === "ECONNREFUSED" || error.code === "ENOTFOUND") {
+      return "Le service IA est momentanément indisponible. Réessayez plus tard.";
+    }
+
     throw new Error(`Erreur Ollama: ${error.message}`);
   }
 }
 
-module.exports = { callOllama };
+function warmUp() {
+  axios
+    .post(
+      `${OLLAMA_URL}/api/generate`,
+      { model: OLLAMA_MODEL, prompt: "Bonjour", stream: false, keep_alive: "30m" },
+      { timeout: OLLAMA_TIMEOUT_MS }
+    )
+    .then(() => console.log("[Ollama] Modèle préchargé en mémoire"))
+    .catch((error) => console.error(`[Ollama] Préchauffage échoué: ${error.message}`));
+}
+
+module.exports = { callOllama, warmUp };

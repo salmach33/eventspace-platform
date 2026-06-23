@@ -1,13 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const {
-  createReservation, getMyReservations, getOwnerReservations, updateReservationStatus, getReservationById,
+  createReservation, getMyReservations, getOwnerReservations,
+  updateReservationStatus, getReservationById, getBookedDates,
 } = require("../controllers/reservationController");
 const { protect, ownerOnly } = require("../middleware/authMiddleware");
 
 router.post("/", protect, createReservation);
 router.get("/my", protect, getMyReservations);
 router.get("/owner", protect, ownerOnly, getOwnerReservations);
+router.get("/space/:spaceId/booked-dates", getBookedDates);
 router.get("/:id", protect, getReservationById);
 router.put("/:id/status", protect, updateReservationStatus);
 

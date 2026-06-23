@@ -11,12 +11,15 @@ const setupSocket = require("./sockets/chatSocket");
 const authRoutes = require("./routes/authRoutes");
 const spaceRoutes = require("./routes/spaceRoutes");
 const reservationRoutes = require("./routes/reservationRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const { warmUp } = require("./utils/ollamaClient");
 
 dotenv.config();
 connectDB();
+warmUp();
 
 const app = express();
 const server = http.createServer(app);
@@ -38,6 +41,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/spaces", spaceRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);

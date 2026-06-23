@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mic2, PartyPopper } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Heart, Mic2, PartyPopper, X } from "lucide-react";
 import API from "../services/api";
 import toast from "react-hot-toast";
 
@@ -12,14 +12,41 @@ const SPACE_TYPES = [
   { v: "evenement", l: "Événement", Icon: PartyPopper },
 ];
 
-export function CreateSpacePage() {
+export default function EditSpacePage() {
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({
     title: "", type: "mariage", description: "", price: "", capacity: "",
     address: "", city: "", country: "Maroc", equipements: [],
   });
-  const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+
+  useEffect(() => {
+    API.get(`/spaces/${id}`)
+      .then(({ data }) => {
+        setForm({
+          title: data.title || "",
+          type: data.type || "mariage",
+          description: data.description || "",
+          price: data.price || "",
+          capacity: data.capacity || "",
+          address: data.location?.address || "",
+          city: data.location?.city || "",
+          country: data.location?.country || "Maroc",
+          equipements: data.equipements || [],
+        });
+        setExistingImages(data.images || []);
+      })
+      .catch(() => {
+        toast.error("Impossible de charger l'espace");
+        navigate("/dashboard");
+      })
+      .finally(() => setPageLoading(false));
+  }, [id]);
 
   const toggleEquip = (eq) => {
     setForm((prev) => ({
@@ -28,6 +55,10 @@ export function CreateSpacePage() {
         ? prev.equipements.filter((e) => e !== eq)
         : [...prev.equipements, eq],
     }));
+  };
+
+  const removeExistingImage = (imgPath) => {
+    setExistingImages((prev) => prev.filter((img) => img !== imgPath));
   };
 
   const handleSubmit = async (e) => {
@@ -39,23 +70,32 @@ export function CreateSpacePage() {
         if (k === "equipements") fd.append(k, JSON.stringify(v));
         else fd.append(k, v);
       });
-      images.forEach((img) => fd.append("images", img));
+      fd.append("existingImages", JSON.stringify(existingImages));
+      newImages.forEach((img) => fd.append("images", img));
 
-      await API.post("/spaces", fd, { headers: { "Content-Type": "multipart/form-data" } });
-      toast.success("Espace créé ! En attente de validation.");
+      await API.put(`/spaces/${id}`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      toast.success("Espace modifié avec succès !");
       navigate("/dashboard");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Erreur création");
+      toast.error(err.response?.data?.message || "Erreur lors de la modification");
     } finally {
       setLoading(false);
     }
   };
 
+  if (pageLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
       <div className="bg-teal-600 py-10 px-4 text-white text-center">
-        <h1 className="text-3xl font-bold">Ajouter un espace</h1>
-        <p className="text-teal-200">Partagez votre salle avec des milliers de clients</p>
+        <h1 className="text-3xl font-bold">Modifier l'espace</h1>
+        <p className="text-teal-200">Mettez à jour les informations de votre salle</p>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -160,28 +200,61 @@ export function CreateSpacePage() {
             </div>
           </div>
 
+          {/* Images existantes */}
+          {existingImages.length > 0 && (
+            <div>
+              <label className="text-sm font-medium text-gray-700">Photos actuelles</label>
+              <div className="mt-2 flex gap-2 flex-wrap">
+                {existingImages.map((img, i) => (
+                  <div key={i} className="relative group">
+                    <img src={`http://localhost:5000${img}`} className="w-20 h-20 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(img)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg"
+                      title="Supprimer cette photo"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">Survolez une photo et cliquez sur la croix pour la retirer</p>
+            </div>
+          )}
+
+          {/* Nouvelles images */}
           <div>
-            <label className="text-sm font-medium text-gray-700">Photos (max 10)</label>
+            <label className="text-sm font-medium text-gray-700">Ajouter de nouvelles photos</label>
             <input
               type="file" accept="image/*" multiple
-              onChange={(e) => setImages(Array.from(e.target.files))}
+              onChange={(e) => setNewImages(Array.from(e.target.files))}
               className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-teal-600 file:text-white file:text-sm file:cursor-pointer"
             />
-            {images.length > 0 && (
+            {newImages.length > 0 && (
               <div className="mt-2 flex gap-2 flex-wrap">
-                {images.map((img, i) => (
-                  <img key={i} src={URL.createObjectURL(img)} className="w-16 h-16 object-cover rounded-lg" />
+                {newImages.map((img, i) => (
+                  <img key={i} src={URL.createObjectURL(img)} className="w-20 h-20 object-cover rounded-lg" />
                 ))}
               </div>
             )}
           </div>
 
-          <button
-            type="submit" disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold text-lg hover:bg-teal-700 disabled:opacity-50 transition"
-          >
-            {loading ? "Création en cours..." : "Publier l'espace"}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="flex-1 border border-gray-200 text-gray-600 py-3 rounded-xl font-semibold hover:bg-gray-50 transition"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit" disabled={loading}
+              className="flex-1 bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 disabled:opacity-50 transition"
+            >
+              {loading ? "Enregistrement..." : "Enregistrer les modifications"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

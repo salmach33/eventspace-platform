@@ -16,7 +16,7 @@ const promoteToAdmin = async (req, res) => {
     user.role = "admin";
     await user.save();
     res.json({
-      message: `✅ ${user.name} est maintenant Admin`,
+      message: `${user.name} est maintenant Admin`,
       _id: user._id, name: user.name, email: user.email,
       role: user.role, token: generateToken(user._id),
     });
@@ -59,7 +59,7 @@ const validateSpace = async (req, res) => {
     space.isRefused = false;
     await space.save();
 
-    const notifMessage = `Votre espace "${space.title}" a été validé et est maintenant visible ! ✅`;
+    const notifMessage = `Votre espace "${space.title}" a été validé et est maintenant visible !`;
 
     await User.findByIdAndUpdate(space.owner, {
       $push: {
@@ -81,7 +81,7 @@ const validateSpace = async (req, res) => {
       });
     }
 
-    res.json({ message: "Espace validé ✅", isValidated: true, isRefused: false });
+    res.json({ message: "Espace validé", isValidated: true, isRefused: false });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -98,7 +98,7 @@ const refuseSpace = async (req, res) => {
     space.isRefused = true;
     await space.save();
 
-    const notifMessage = `Votre espace "${space.title}" a été refusé par l'administrateur. ❌ Veuillez le modifier et soumettre à nouveau.`;
+    const notifMessage = `Votre espace "${space.title}" a été refusé par l'administrateur. Veuillez le modifier et soumettre à nouveau.`;
 
     await User.findByIdAndUpdate(space.owner, {
       $push: {
@@ -120,7 +120,7 @@ const refuseSpace = async (req, res) => {
       });
     }
 
-    res.json({ message: "Espace refusé ❌", isValidated: false, isRefused: true });
+    res.json({ message: "Espace refusé", isValidated: false, isRefused: true });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -135,10 +135,43 @@ const pendingSpace = async (req, res) => {
     space.isValidated = false;
     space.isRefused = false;
     await space.save();
-    res.json({ message: "Remis en attente 🔄", isValidated: false, isRefused: false });
+    res.json({ message: "Remis en attente", isValidated: false, isRefused: false });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-module.exports = { promoteToAdmin, getAllUsers, getAllSpaces, validateSpace, refuseSpace, pendingSpace };
+// GET /api/admin/reservations
+const getAllReservations = async (req, res) => {
+  try {
+    const Reservation = require("../models/Reservation");
+    const reservations = await Reservation.find({})
+      .populate("space", "title type location price")
+      .populate("client", "name email phone")
+      .populate("owner", "name email phone")
+      .sort({ createdAt: -1 });
+    res.json(reservations);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/admin/payments
+const getAllPayments = async (req, res) => {
+  try {
+    const Payment = require("../models/Payment");
+    const payments = await Payment.find({})
+      .populate("reservation", "date space status")
+      .populate("client", "name email")
+      .populate("owner", "name email")
+      .sort({ createdAt: -1 });
+    res.json(payments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {
+  promoteToAdmin, getAllUsers, getAllSpaces, validateSpace, refuseSpace, pendingSpace,
+  getAllReservations, getAllPayments,
+};

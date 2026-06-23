@@ -8,8 +8,11 @@ import SpacesPage from "./pages/SpacesPage";
 import SpaceDetailPage from "./pages/SpaceDetailPage";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage from "./pages/DashboardPage";
+import ReservationDetailPage from "./pages/ReservationDetailPage";
 import MessagesPage from "./pages/MessagesPage";
-import { MySpacesPage, CreateSpacePage } from "./pages/MySpacesPage";
+import { CreateSpacePage } from "./pages/MySpacesPage";
+import EditSpacePage from "./pages/EditSpacePage";
+import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 
 const PrivateRoute = ({ children, roles }) => {
@@ -19,30 +22,37 @@ const PrivateRoute = ({ children, roles }) => {
   return children;
 };
 
+// Les propriétaires n'ont pas accès à la page d'accueil publique — ils sont redirigés vers leur tableau de bord
+const HomeRoute = () => {
+  const { user } = useAuth();
+  if (user?.role === "owner") return <Navigate to="/dashboard" />;
+  return <HomePage />;
+};
+
 function AppRoutes() {
   return (
     <Routes>
-      {/* Page admin sans Navbar */}
       <Route path="/admin" element={
         <PrivateRoute roles={["admin"]}>
           <AdminPage />
         </PrivateRoute>
       } />
 
-      {/* Toutes les autres pages avec Navbar */}
       <Route path="/*" element={
         <>
           <Navbar />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomeRoute />} />
             <Route path="/spaces" element={<SpacesPage />} />
             <Route path="/spaces/create" element={<PrivateRoute roles={["owner", "admin"]}><CreateSpacePage /></PrivateRoute>} />
+            <Route path="/spaces/:id/edit" element={<PrivateRoute roles={["owner", "admin"]}><EditSpacePage /></PrivateRoute>} />
             <Route path="/spaces/:id" element={<SpaceDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+            <Route path="/reservations/:id" element={<PrivateRoute><ReservationDetailPage /></PrivateRoute>} />
             <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
-            <Route path="/my-spaces" element={<PrivateRoute roles={["owner", "admin"]}><MySpacesPage /></PrivateRoute>} />
+            <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </>

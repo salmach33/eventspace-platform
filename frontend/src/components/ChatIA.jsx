@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Bot, X } from "lucide-react";
 import { useChat } from "../hooks/useChat";
 
 export default function ChatIA() {
@@ -33,10 +34,10 @@ export default function ChatIA() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all flex items-center justify-center text-2xl font-bold z-50"
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-br from-teal-700 to-teal-500 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all flex items-center justify-center z-50"
           title="Ouvrir le chat IA"
         >
-          🤖
+          <Bot className="w-6 h-6" />
         </button>
       )}
 
@@ -44,19 +45,19 @@ export default function ChatIA() {
       {isOpen && (
         <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 z-50">
           {/* En-tête */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 flex justify-between items-center">
+          <div className="bg-gradient-to-r from-teal-700 to-teal-500 text-white p-4 flex justify-between items-center">
             <div>
               <h3 className="font-bold text-lg">Chat IA EventSpace</h3>
-              <p className="text-sm text-purple-100">Répondez intelligemment</p>
+              <p className="text-sm text-teal-100">Répondez intelligemment</p>
             </div>
             <button
               onClick={() => {
                 setIsOpen(false);
                 clearMessages();
               }}
-              className="text-white hover:bg-purple-700 rounded-full p-2 transition"
+              className="text-white hover:bg-teal-700 rounded-full p-2 transition"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -78,7 +79,7 @@ export default function ChatIA() {
                     <button
                       key={i}
                       onClick={() => setInput(example)}
-                      className="text-xs bg-white border border-purple-200 text-purple-700 p-2 rounded hover:bg-purple-50 transition truncate"
+                      className="text-xs bg-white border border-teal-200 text-teal-700 p-2 rounded hover:bg-teal-50 transition truncate"
                     >
                       {example}
                     </button>
@@ -94,7 +95,7 @@ export default function ChatIA() {
                   <div
                     className={`max-w-xs p-3 rounded-lg ${
                       msg.sender === "user"
-                        ? "bg-purple-600 text-white rounded-br-none"
+                        ? "bg-teal-600 text-white rounded-br-none"
                         : msg.sender === "error"
                         ? "bg-red-100 text-red-700 rounded-bl-none"
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
@@ -127,12 +128,13 @@ export default function ChatIA() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Posez une question..."
               disabled={loading}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 disabled:bg-gray-100"
+              maxLength={500}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-600 disabled:bg-gray-100"
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition font-medium"
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 transition font-medium"
             >
               {loading ? "..." : "Envoyer"}
             </button>

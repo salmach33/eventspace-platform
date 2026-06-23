@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { getSocket } from "../services/socket";
 import { useAuth } from "./AuthContext";
 import API from "../services/api";
@@ -32,7 +33,7 @@ export const NotifProvider = ({ children }) => {
     socket.on("notification", (notif) => {
       setNotifications((prev) => [notif, ...prev]);
       setUnread((prev) => prev + 1);
-      toast(notif.message, { icon: "🔔" });
+      toast(notif.message, { icon: <Bell className="w-4 h-4 text-teal-600" /> });
     });
 
     return () => socket.off("notification");

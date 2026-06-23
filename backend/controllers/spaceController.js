@@ -87,15 +87,15 @@ const updateSpace = async (req, res) => {
   try {
     const space = await Space.findById(req.params.id);
     if (!space) return res.status(404).json({ message: "Espace introuvable" });
-    if (space.owner.toString() !== req.user._id.toString()) {
+    if (space.owner.toString() !== req.user._id.toString() && req.user.role !== "admin") {
       return res.status(403).json({ message: "Non autorisé" });
     }
 
-    const { title, type, description, price, capacity, address, city, country, equipements, availability } = req.body;
+    const { title, type, description, price, capacity, address, city, country, equipements, availability, existingImages } = req.body;
 
     if (title) space.title = title;
     if (type) space.type = type;
-    if (description) space.description = description;
+    if (description !== undefined) space.description = description;
     if (price) space.price = Number(price);
     if (capacity) space.capacity = Number(capacity);
     if (address || city || country) {
@@ -108,10 +108,23 @@ const updateSpace = async (req, res) => {
     if (equipements) space.equipements = JSON.parse(equipements);
     if (availability) space.availability = JSON.parse(availability);
 
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map((f) => `/uploads/${f.filename}`);
-      space.images = [...space.images, ...newImages];
+    // Gérer les images : garder seulement celles envoyées dans existingImages
+    // puis ajouter les nouvelles images uploadées
+    let keptImages = space.images;
+    if (existingImages !== undefined) {
+      try {
+        keptImages = JSON.parse(existingImages);
+      } catch {
+        keptImages = space.images;
+      }
     }
+
+    const newUploadedImages = req.files ? req.files.map((f) => `/uploads/${f.filename}`) : [];
+    space.images = [...keptImages, ...newUploadedImages];
+
+    // Une modification renvoie l'espace en attente de validation
+    space.isValidated = false;
+    space.isRefused = false;
 
     const updated = await space.save();
     res.json(updated);
