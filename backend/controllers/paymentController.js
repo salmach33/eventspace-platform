@@ -94,6 +94,36 @@ const getPaymentByReservation = async (req, res) => {
   }
 };
 
+// GET /api/payments/:id - détail d'un paiement (page dédiée)
+const getPaymentById = async (req, res) => {
+  try {
+    const payment = await Payment.findById(req.params.id).populate({
+      path: "reservation",
+      populate: [
+        { path: "space", select: "title type location images" },
+        { path: "client", select: "name email phone" },
+        { path: "owner", select: "name email phone" },
+      ],
+    });
+    if (!payment) return res.status(404).json({ message: "Paiement introuvable" });
+
+    const isClient = payment.client.toString() === req.user._id.toString();
+    const isOwner = payment.owner.toString() === req.user._id.toString();
+    if (!isClient && !isOwner && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Non autorisé" });
+    }
+
+    await payment.populate([
+      { path: "client", select: "name email phone" },
+      { path: "owner", select: "name email phone" },
+    ]);
+
+    res.json(payment);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // PUT /api/payments/:id/cancel - le client annule son paiement avant confirmation
 const cancelPayment = async (req, res) => {
   try {
@@ -194,6 +224,7 @@ module.exports = {
   getMyPayments,
   getOwnerPayments,
   getPaymentByReservation,
+  getPaymentById,
   cancelPayment,
   rejectPayment,
   confirmPayment,

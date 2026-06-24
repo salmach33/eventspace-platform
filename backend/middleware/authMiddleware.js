@@ -9,6 +9,12 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
+      if (!req.user) {
+        return res.status(401).json({ message: "Utilisateur introuvable" });
+      }
+      if (req.user.isBlocked) {
+        return res.status(403).json({ message: "Ce compte a été bloqué par un administrateur" });
+      }
       next();
     } catch (error) {
       return res.status(401).json({ message: "Token invalide" });

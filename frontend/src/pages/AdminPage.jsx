@@ -12,7 +12,7 @@ import AdminReservationsSection from "../components/admin/AdminReservationsSecti
 import AdminPaymentsSection from "../components/admin/AdminPaymentsSection";
 
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [section, setSection] = useState("dashboard");
   const [spaces, setSpaces] = useState([]);
@@ -100,29 +100,69 @@ export default function AdminPage() {
     }
   };
 
+  const handleBlockUser = async (userId) => {
+    try {
+      await API.put(`/admin/users/${userId}/block`);
+      setUsers((prev) => prev.map((u) => u._id === userId ? { ...u, isBlocked: true } : u));
+      toast.success("Utilisateur bloqué");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur blocage");
+    }
+  };
+
+  const handleUnblockUser = async (userId) => {
+    try {
+      await API.put(`/admin/users/${userId}/unblock`);
+      setUsers((prev) => prev.map((u) => u._id === userId ? { ...u, isBlocked: false } : u));
+      toast.success("Utilisateur débloqué");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur déblocage");
+    }
+  };
+
+  const handleChangeUserRole = async (userId, role) => {
+    try {
+      await API.put(`/admin/users/${userId}/role`, { role });
+      setUsers((prev) => prev.map((u) => u._id === userId ? { ...u, role } : u));
+      toast.success("Rôle mis à jour");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur changement de rôle");
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    if (!confirm("Supprimer cet utilisateur définitivement ?")) return;
+    try {
+      await API.delete(`/admin/users/${userId}`);
+      setUsers((prev) => prev.filter((u) => u._id !== userId));
+      toast.success("Utilisateur supprimé");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur suppression");
+    }
+  };
+
   const pendingSpaces = spaces.filter((s) => !s.isValidated && !s.isRefused);
-  const pendingPayments = payments.filter((p) => p.status === "pending");
 
   const NAV_ITEMS = [
     { id: "dashboard", label: "Dashboard", Icon: LayoutDashboard },
     { id: "spaces", label: "Espaces", Icon: Building2, badge: pendingSpaces.length },
     { id: "users", label: "Utilisateurs", Icon: Users },
     { id: "reservations", label: "Réservations", Icon: CalendarCheck },
-    { id: "payments", label: "Paiements", Icon: Wallet, badge: pendingPayments.length },
+    { id: "payments", label: "Paiements", Icon: Wallet },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex">
       <AdminSidebar
         items={NAV_ITEMS}
         active={section}
         onChange={setSection}
-        onBack={() => navigate("/")}
+        onLogout={() => { logout(); navigate("/login"); }}
       />
 
-      <main className="flex-1 px-6 py-8 max-w-[1400px]">
+      <main className="flex-1 min-w-0 px-6 py-8 max-w-[1400px]">
         {error && (
-          <div className="flex items-center gap-2 bg-red-900/40 border border-red-700 text-red-300 rounded-xl p-4 mb-6 text-sm">
+          <div className="flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 mb-6 text-sm">
             <XCircle className="w-4 h-4 flex-shrink-0" /> {error} — Vérifiez que le backend tourne et que vous êtes bien connecté en admin.
           </div>
         )}
@@ -153,7 +193,16 @@ export default function AdminPage() {
                 onView={(id) => navigate(`/spaces/${id}`)}
               />
             )}
-            {section === "users" && <AdminUsersSection users={users} />}
+            {section === "users" && (
+              <AdminUsersSection
+                users={users}
+                currentUserId={user?._id}
+                onChangeRole={handleChangeUserRole}
+                onBlock={handleBlockUser}
+                onUnblock={handleUnblockUser}
+                onDelete={handleDeleteUser}
+              />
+            )}
             {section === "reservations" && <AdminReservationsSection reservations={reservations} />}
             {section === "payments" && <AdminPaymentsSection payments={payments} />}
           </>

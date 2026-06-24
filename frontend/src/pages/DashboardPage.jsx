@@ -463,8 +463,8 @@ export default function DashboardPage() {
                             return (
                               <tr
                                 key={payment._id}
-                                onClick={() => res && navigate(`/reservations/${res._id}`)}
-                                className={`border-b border-gray-50 last:border-0 transition ${res ? "cursor-pointer hover:bg-gray-50" : ""}`}
+                                onClick={() => navigate(`/payments/${payment._id}`)}
+                                className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 transition"
                               >
                                 <td className="px-5 py-3 font-semibold text-gray-800">{res?.space?.title || "Réservation"}</td>
                                 <td className="px-5 py-3 text-gray-600">{counterpart?.name}</td>
@@ -480,14 +480,12 @@ export default function DashboardPage() {
                                 <td className="px-5 py-3 text-gray-600">{new Date(payment.createdAt).toLocaleDateString("fr-FR")}</td>
                                 <td className="px-5 py-3"><Badge cfg={PAYMENT_STATUS_CONFIG[payment.status]} /></td>
                                 <td className="px-5 py-3 text-right">
-                                  {res && (
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); navigate(`/reservations/${res._id}`); }}
-                                      className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-100"
-                                    >
-                                      <Eye className="w-3.5 h-3.5" /> Voir
-                                    </button>
-                                  )}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); navigate(`/payments/${payment._id}`); }}
+                                    className="inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-100"
+                                  >
+                                    <Eye className="w-3.5 h-3.5" /> Voir
+                                  </button>
                                 </td>
                               </tr>
                             );

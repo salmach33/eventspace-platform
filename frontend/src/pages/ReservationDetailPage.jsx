@@ -18,6 +18,13 @@ const METHOD_CONFIG = {
   cash:     { label: "Espèces",           Icon: Wallet },
 };
 
+const PAYMENT_DETAIL_LABELS = {
+  pending:   "En attente de validation",
+  confirmed: "Paiement confirmé",
+  cancelled: "Paiement annulé",
+  refunded:  "Paiement remboursé",
+};
+
 export default function ReservationDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
@@ -60,6 +67,7 @@ export default function ReservationDetailPage() {
 
   const res = reservation;
   const isOwner = user._id === res.owner?._id;
+  const isAdmin = user.role === "admin";
   const spaceImg = res.space?.images?.[0] ? `http://localhost:5000${res.space.images[0]}` : null;
   const canPay = !payment || payment.status === "cancelled";
   const MethodIcon = payment ? METHOD_CONFIG[payment.method]?.Icon : null;
@@ -202,38 +210,52 @@ export default function ReservationDetailPage() {
 
         {/* RIGHT - statut, paiement, actions */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24 space-y-5">
-            <div>
-              <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Statut</div>
-              <div className="flex flex-col gap-2 items-start">
-                <Badge cfg={STATUS_CONFIG[res.status]} />
-                {payment && <Badge cfg={PAYMENT_STATUS_CONFIG[payment.status]} />}
-              </div>
-            </div>
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 sticky top-24 space-y-6">
+            {/* Statut de la réservation */}
+            <section>
+              <h3 className="text-sm font-bold text-gray-800 mb-3">Statut de la réservation</h3>
+              <Badge cfg={STATUS_CONFIG[res.status]} />
+            </section>
 
-            {payment && (
-              <div className="border-t border-gray-100 pt-4">
-                <div className="text-xs text-gray-400 uppercase font-semibold mb-2">Paiement</div>
-                <div className="text-sm text-gray-600 space-y-1">
-                  <div className="font-semibold text-gray-800">{payment.amount?.toLocaleString()} MAD</div>
-                  <div className="flex items-center gap-1.5">
-                    {MethodIcon ? (
-                      <>
-                        <MethodIcon className="w-3.5 h-3.5" />
-                        {METHOD_CONFIG[payment.method].label}
-                      </>
-                    ) : payment.method}
+            {/* Paiement */}
+            <section className="border-t border-gray-100 pt-5">
+              <h3 className="text-sm font-bold text-gray-800 mb-3">Paiement</h3>
+              {payment ? (
+                <>
+                  <Badge cfg={PAYMENT_STATUS_CONFIG[payment.status]}>
+                    {PAYMENT_DETAIL_LABELS[payment.status] || PAYMENT_STATUS_CONFIG[payment.status]?.label}
+                  </Badge>
+                  <div className="text-sm bg-gray-50 rounded-xl p-3 mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Montant</span>
+                      <span className="font-semibold text-gray-800">{payment.amount?.toLocaleString()} MAD</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Méthode</span>
+                      <span className="flex items-center gap-1.5 font-semibold text-gray-800">
+                        {MethodIcon && <MethodIcon className="w-3.5 h-3.5" />}
+                        {METHOD_CONFIG[payment.method]?.label || payment.method}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-400">Déclaré le</span>
+                      <span className="font-semibold text-gray-800">{new Date(payment.createdAt).toLocaleDateString("fr-FR")}</span>
+                    </div>
                   </div>
-                  <div className="text-gray-400 text-xs">Déclaré le {new Date(payment.createdAt).toLocaleDateString("fr-FR")}</div>
-                </div>
-                {payment.cancellationReason && ["cancelled", "refunded"].includes(payment.status) && (
-                  <p className="text-sm text-rose-500 italic mt-2">Motif : "{payment.cancellationReason}"</p>
-                )}
-              </div>
-            )}
+                  {payment.cancellationReason && ["cancelled", "refunded"].includes(payment.status) && (
+                    <p className="text-sm text-rose-500 italic mt-2">Motif : "{payment.cancellationReason}"</p>
+                  )}
+                  <Link to={`/payments/${payment._id}`} className="inline-block text-sm text-teal-600 font-semibold hover:underline mt-3">
+                    Voir le détail du paiement
+                  </Link>
+                </>
+              ) : (
+                <p className="text-sm text-gray-400">Aucun paiement effectué pour le moment</p>
+              )}
+            </section>
 
-            <div className="border-t border-gray-100 pt-4 flex flex-col gap-2">
-              {isOwner && res.status === "pending" && (
+            <div className="border-t border-gray-100 pt-5 flex flex-col gap-2">
+              {!isAdmin && isOwner && res.status === "pending" && (
                 <>
                   <button onClick={() => handleStatusChange("accepted")} className="bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700">
                     Accepter
@@ -243,22 +265,22 @@ export default function ReservationDetailPage() {
                   </button>
                 </>
               )}
-              {!isOwner && res.status === "pending" && (
+              {!isAdmin && !isOwner && res.status === "pending" && (
                 <button onClick={handleCancelReservation} className="border border-rose-300 text-rose-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-rose-50">
                   Annuler la réservation
                 </button>
               )}
-              {!isOwner && res.status === "accepted" && canPay && (
+              {!isAdmin && !isOwner && res.status === "accepted" && canPay && (
                 <button onClick={() => setShowPaymentModal(true)} className="flex items-center justify-center gap-2 bg-teal-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-700">
                   <CreditCard className="w-4 h-4" /> {payment ? "Payer à nouveau" : "Payer maintenant"}
                 </button>
               )}
-              {!isOwner && payment?.status === "pending" && (
+              {!isAdmin && !isOwner && payment?.status === "pending" && (
                 <button onClick={handleCancelPayment} className="border border-rose-300 text-rose-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-rose-50">
                   Annuler le paiement
                 </button>
               )}
-              {isOwner && payment?.status === "pending" && (
+              {!isAdmin && isOwner && payment?.status === "pending" && (
                 <>
                   <button onClick={handleConfirmPayment} className="bg-emerald-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700">
                     Confirmer réception
@@ -268,17 +290,19 @@ export default function ReservationDetailPage() {
                   </button>
                 </>
               )}
-              {isOwner && res.status === "accepted" && (
+              {!isAdmin && isOwner && res.status === "accepted" && (
                 <button onClick={handleCancelReservation} className="border border-rose-300 text-rose-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-rose-50">
                   Annuler la réservation
                 </button>
               )}
-              <Link
-                to={`/messages?spaceId=${res.space?._id}&ownerId=${isOwner ? res.client?._id : res.owner?._id}`}
-                className="flex items-center justify-center gap-2 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50"
-              >
-                <MessageCircle className="w-4 h-4" /> Message
-              </Link>
+              {!isAdmin && (
+                <Link
+                  to={`/messages?spaceId=${res.space?._id}&ownerId=${isOwner ? res.client?._id : res.owner?._id}`}
+                  className="flex items-center justify-center gap-2 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50"
+                >
+                  <MessageCircle className="w-4 h-4" /> Message
+                </Link>
+              )}
               <button onClick={() => setShowReceipt(true)} className="flex items-center justify-center gap-2 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm hover:bg-gray-50">
                 <FileText className="w-4 h-4" /> Reçu PDF
               </button>

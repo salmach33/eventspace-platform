@@ -42,6 +42,9 @@ const login = async (req, res) => {
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect" });
     }
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Ce compte a été bloqué par un administrateur" });
+    }
 
     res.json(formatUser(user, generateToken(user._id)));
   } catch (err) {

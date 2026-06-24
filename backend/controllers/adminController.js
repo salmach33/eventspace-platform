@@ -35,6 +35,70 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// PUT /api/admin/users/:id/block
+const blockUser = async (req, res) => {
+  try {
+    if (req.params.id === req.user._id.toString()) {
+      return res.status(400).json({ message: "Vous ne pouvez pas vous bloquer vous-même" });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    user.isBlocked = true;
+    await user.save();
+    res.json({ message: "Utilisateur bloqué", isBlocked: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PUT /api/admin/users/:id/unblock
+const unblockUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    user.isBlocked = false;
+    await user.save();
+    res.json({ message: "Utilisateur débloqué", isBlocked: false });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// PUT /api/admin/users/:id/role
+const updateUserRole = async (req, res) => {
+  try {
+    const { role } = req.body;
+    if (!["client", "owner", "admin"].includes(role)) {
+      return res.status(400).json({ message: "Rôle invalide" });
+    }
+    if (req.params.id === req.user._id.toString()) {
+      return res.status(400).json({ message: "Vous ne pouvez pas changer votre propre rôle" });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    user.role = role;
+    await user.save();
+    res.json({ message: "Rôle mis à jour", role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// DELETE /api/admin/users/:id
+const deleteUser = async (req, res) => {
+  try {
+    if (req.params.id === req.user._id.toString()) {
+      return res.status(400).json({ message: "Vous ne pouvez pas supprimer votre propre compte" });
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    await user.deleteOne();
+    res.json({ message: "Utilisateur supprimé" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // GET /api/admin/spaces
 const getAllSpaces = async (req, res) => {
   try {
@@ -172,6 +236,9 @@ const getAllPayments = async (req, res) => {
 };
 
 module.exports = {
-  promoteToAdmin, getAllUsers, getAllSpaces, validateSpace, refuseSpace, pendingSpace,
+  promoteToAdmin, getAllUsers, blockUser, unblockUser, updateUserRole, deleteUser,
+  getAllSpaces, validateSpace, refuseSpace, pendingSpace,
   getAllReservations, getAllPayments,
 };
+
+

@@ -228,7 +228,7 @@ export default function SpaceDetailPage() {
                 <p className="text-gray-500 text-sm">{space.owner?.email}</p>
               </div>
             </div>
-            {user && user._id !== space.owner?._id && (
+            {user && user._id !== space.owner?._id && user.role !== "admin" && (
               <button
                 onClick={handleContact}
                 className="mt-4 w-full flex items-center justify-center gap-2 border-2 border-teal-600 text-teal-600 py-2 rounded-lg font-semibold hover:bg-teal-50 transition"
@@ -360,11 +360,13 @@ export default function SpaceDetailPage() {
             </div>
           )}
 
-          {user?.role === "owner" ? (
+          {user?.role === "owner" || user?.role === "admin" ? (
             <div className="bg-white rounded-2xl shadow p-6 sticky top-24 text-center">
               <Building2 className="w-9 h-9 mx-auto mb-2 text-gray-300" />
               <p className="text-gray-500 text-sm">
-                Les propriétaires ne peuvent pas réserver d'espace. Cette section est réservée aux clients.
+                {user.role === "admin"
+                  ? "Les administrateurs ne peuvent pas réserver d'espace. Cette section est réservée aux clients."
+                  : "Les propriétaires ne peuvent pas réserver d'espace. Cette section est réservée aux clients."}
               </p>
             </div>
           ) : (

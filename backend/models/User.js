@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     },
     avatar: { type: String, default: "" },
     phone: { type: String, default: "" },
+    isBlocked: { type: Boolean, default: false },
     notifications: [
       {
         type: { type: String },

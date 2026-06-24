@@ -64,7 +64,7 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          {user?.role !== "owner" && (
+          {user?.role !== "owner" && user?.role !== "admin" && (
             <Link to="/spaces" className="text-gray-600 hover:text-teal-600 font-medium">
               Espaces
             </Link>
@@ -121,9 +121,11 @@ export default function Navbar() {
               </div>
 
               {/* Messages */}
-              <Link to="/messages" className="p-2 rounded-full hover:bg-gray-100">
-                <MessageCircle className="w-5 h-5 text-gray-600" />
-              </Link>
+              {user.role !== "admin" && (
+                <Link to="/messages" className="p-2 rounded-full hover:bg-gray-100">
+                  <MessageCircle className="w-5 h-5 text-gray-600" />
+                </Link>
+              )}
 
               {/* User menu */}
               <div className="relative">

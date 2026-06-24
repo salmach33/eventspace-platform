@@ -9,6 +9,7 @@ import SpaceDetailPage from "./pages/SpaceDetailPage";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage from "./pages/DashboardPage";
 import ReservationDetailPage from "./pages/ReservationDetailPage";
+import PaymentDetailPage from "./pages/PaymentDetailPage";
 import MessagesPage from "./pages/MessagesPage";
 import { CreateSpacePage } from "./pages/MySpacesPage";
 import EditSpacePage from "./pages/EditSpacePage";
@@ -22,10 +23,11 @@ const PrivateRoute = ({ children, roles }) => {
   return children;
 };
 
-// Les propriétaires n'ont pas accès à la page d'accueil publique — ils sont redirigés vers leur tableau de bord
+// Les propriétaires et admins n'ont pas accès à la page d'accueil publique — ils sont redirigés vers leur tableau de bord
 const HomeRoute = () => {
   const { user } = useAuth();
   if (user?.role === "owner") return <Navigate to="/dashboard" />;
+  if (user?.role === "admin") return <Navigate to="/admin" />;
   return <HomePage />;
 };
 
@@ -49,9 +51,10 @@ function AppRoutes() {
             <Route path="/spaces/:id" element={<SpaceDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/dashboard" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
+            <Route path="/dashboard" element={<PrivateRoute roles={["client", "owner"]}><DashboardPage /></PrivateRoute>} />
             <Route path="/reservations/:id" element={<PrivateRoute><ReservationDetailPage /></PrivateRoute>} />
-            <Route path="/messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
+            <Route path="/payments/:id" element={<PrivateRoute><PaymentDetailPage /></PrivateRoute>} />
+            <Route path="/messages" element={<PrivateRoute roles={["client", "owner"]}><MessagesPage /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
