@@ -20,7 +20,7 @@ const spaceSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     type: {
       type: String,
-      enum: ["mariage", "conference", "evenement"],
+      enum: ["mariage", "conference", "evenement", "anniversaire", "fiancailles", "soiree", "seminaire"],
       required: true,
     },
     description: { type: String, default: "" },

@@ -24,8 +24,12 @@ const REQUEST_KEYWORDS = {
 
 const TYPE_KEYWORDS = {
   mariage: ["mariage"],
-  conference: ["conference", "seminaire"],
+  conference: ["conference"],
   evenement: ["evenement", "event"],
+  anniversaire: ["anniversaire", "birthday"],
+  fiancailles: ["fiancailles", "fiançailles", "bague", "fiancer"],
+  soiree: ["soiree", "soirée", "gala", "cocktail"],
+  seminaire: ["seminaire", "seminaire", "formation"],
 };
 
 const MONTHS_FR = {

@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Heart, Mic2, PartyPopper } from "lucide-react";
+import { Search, Heart, Mic2, PartyPopper, Cake, Gem, Music, BookOpen } from "lucide-react";
 import API from "../services/api";
 import SpaceCard from "../components/SpaceCard";
 import ChatIA from "../components/ChatIA";
 
 const CATEGORIES = [
-  { type: "mariage", label: "Salles Mariage", Icon: Heart, iconBg: "bg-rose-100", iconColor: "text-rose-600" },
-  { type: "conference", label: "Salles Conférence", Icon: Mic2, iconBg: "bg-sky-100", iconColor: "text-sky-600" },
-  { type: "evenement", label: "Salles Événement", Icon: PartyPopper, iconBg: "bg-amber-100", iconColor: "text-amber-600" },
+  { type: "mariage",      label: "Salles Mariage",      Icon: Heart,       iconBg: "bg-rose-100",   iconColor: "text-rose-600" },
+  { type: "conference",   label: "Salles Conférence",   Icon: Mic2,        iconBg: "bg-sky-100",    iconColor: "text-sky-600" },
+  { type: "evenement",    label: "Salles Événement",    Icon: PartyPopper, iconBg: "bg-amber-100",  iconColor: "text-amber-600" },
+  { type: "anniversaire", label: "Anniversaires",       Icon: Cake,        iconBg: "bg-purple-100", iconColor: "text-purple-600" },
+  { type: "fiancailles",  label: "Fiançailles",         Icon: Gem,         iconBg: "bg-pink-100",   iconColor: "text-pink-600" },
+  { type: "soiree",       label: "Soirées / Galas",     Icon: Music,       iconBg: "bg-indigo-100", iconColor: "text-indigo-600" },
+  { type: "seminaire",    label: "Séminaires",          Icon: BookOpen,    iconBg: "bg-teal-100",   iconColor: "text-teal-600" },
 ];
 
 export default function HomePage() {
@@ -57,7 +61,7 @@ export default function HomePage() {
       {/* Categories */}
       <div className="max-w-7xl mx-auto px-4 py-16">
         <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Nos catégories</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
           {CATEGORIES.map(({ type, label, Icon, iconBg, iconColor }) => (
             <button
               key={type}

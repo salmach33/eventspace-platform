@@ -72,6 +72,10 @@ export default function SpacesPage() {
                   <option value="mariage">Mariage</option>
                   <option value="conference">Conférence</option>
                   <option value="evenement">Événement</option>
+                  <option value="anniversaire">Anniversaire</option>
+                  <option value="fiancailles">Fiançailles</option>
+                  <option value="soiree">Soirée / Gala</option>
+                  <option value="seminaire">Séminaire</option>
                 </select>
               </div>
               <div>

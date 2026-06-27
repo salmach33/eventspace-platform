@@ -1,14 +1,19 @@
 import {
   Heart, Mic2, PartyPopper, CheckCircle2, XCircle, Clock, ShieldCheck, Building2, User, Ban, RotateCcw,
+  Cake, Gem, Music, BookOpen,
 } from "lucide-react";
 
 export const BLOCKED_BADGE = { label: "Bloqué", Icon: Ban, cls: "bg-rose-50 text-rose-700 border border-rose-200" };
 export const ACTIVE_BADGE = { label: "Actif", Icon: CheckCircle2, cls: "bg-emerald-50 text-emerald-700 border border-emerald-200" };
 
 export const TYPE_CONFIG = {
-  mariage: { label: "Mariage", Icon: Heart },
-  conference: { label: "Conférence", Icon: Mic2 },
-  evenement: { label: "Événement", Icon: PartyPopper },
+  mariage:      { label: "Mariage",            Icon: Heart },
+  conference:   { label: "Conférence",         Icon: Mic2 },
+  evenement:    { label: "Événement",          Icon: PartyPopper },
+  anniversaire: { label: "Anniversaire",       Icon: Cake },
+  fiancailles:  { label: "Fiançailles",        Icon: Gem },
+  soiree:       { label: "Soirée / Gala",      Icon: Music },
+  seminaire:    { label: "Séminaire",          Icon: BookOpen },
 };
 
 export const SPACE_STATUS_BADGE = {

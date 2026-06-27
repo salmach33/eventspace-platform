@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
-import { Heart, Mic2, PartyPopper, MapPin, Star, Users } from "lucide-react";
+import { Heart, Mic2, PartyPopper, MapPin, Star, Users, Cake, Gem, Music, BookOpen } from "lucide-react";
 
 const TYPE_CONFIG = {
-  mariage:    { label: "Mariage",    Icon: Heart,       badge: "bg-rose-50 text-rose-700" },
-  conference: { label: "Conférence", Icon: Mic2,        badge: "bg-sky-50 text-sky-700" },
-  evenement:  { label: "Événement",  Icon: PartyPopper, badge: "bg-amber-50 text-amber-700" },
+  mariage:      { label: "Mariage",             Icon: Heart,       badge: "bg-rose-50 text-rose-700" },
+  conference:   { label: "Conférence",          Icon: Mic2,        badge: "bg-sky-50 text-sky-700" },
+  evenement:    { label: "Événement",           Icon: PartyPopper, badge: "bg-amber-50 text-amber-700" },
+  anniversaire: { label: "Anniversaire",        Icon: Cake,        badge: "bg-purple-50 text-purple-700" },
+  fiancailles:  { label: "Fiançailles",         Icon: Gem,         badge: "bg-pink-50 text-pink-700" },
+  soiree:       { label: "Soirée / Gala",       Icon: Music,       badge: "bg-indigo-50 text-indigo-700" },
+  seminaire:    { label: "Séminaire",           Icon: BookOpen,    badge: "bg-teal-50 text-teal-700" },
 };
 
 export default function SpaceCard({ space }) {
