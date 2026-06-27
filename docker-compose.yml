@@ -2,11 +2,9 @@ version: "3.9"
 
 services:
 
-  # ── Frontend (React buildé + Nginx reverse proxy) ────────────────────────
+  # ── Frontend (image Docker Hub, mise a jour auto par Watchtower) ──────────
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: schlarhmo/eventspace-frontend:latest
     container_name: eventspace-frontend
     ports:
       - "80:80"
@@ -16,11 +14,9 @@ services:
       - eventspace-network
     restart: unless-stopped
 
-  # ── Backend (Node.js / Express) ──────────────────────────────────────────
+  # ── Backend (image Docker Hub, mise a jour auto par Watchtower) ───────────
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: schlarhmo/eventspace-backend:latest
     container_name: eventspace-backend
     environment:
       PORT: 5000
@@ -57,7 +53,7 @@ services:
       retries: 5
       start_period: 20s
 
-  # ── Ollama (LLM local - modèle Mistral) ──────────────────────────────────
+  # ── Ollama (LLM local) ────────────────────────────────────────────────────
   ollama:
     image: ollama/ollama
     container_name: eventspace-ollama
@@ -66,14 +62,21 @@ services:
     networks:
       - eventspace-network
     restart: unless-stopped
-    # Pour activer le GPU (optionnel, nécessite NVIDIA Container Toolkit) :
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+
+  # ── Watchtower (mise a jour automatique des conteneurs) ───────────────────
+  watchtower:
+    image: containrrr/watchtower
+    container_name: eventspace-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_POLL_INTERVAL: 60        # verifie Docker Hub toutes les 60 secondes
+      WATCHTOWER_CLEANUP: "true"          # supprime les anciennes images apres update
+      WATCHTOWER_INCLUDE_RESTARTING: "true"
+    command: eventspace-frontend eventspace-backend  # surveille uniquement ces 2 conteneurs
+    networks:
+      - eventspace-network
+    restart: unless-stopped
 
 # ── Volumes persistants ───────────────────────────────────────────────────────
 volumes:
@@ -81,7 +84,7 @@ volumes:
   uploads_data:
   ollama_data:
 
-# ── Réseau interne ────────────────────────────────────────────────────────────
+# ── Reseau interne ────────────────────────────────────────────────────────────
 networks:
   eventspace-network:
     driver: bridge
