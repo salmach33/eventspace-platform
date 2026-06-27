@@ -16,6 +16,7 @@ import EditSpacePage from "./pages/EditSpacePage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 
+
 const PrivateRoute = ({ children, roles }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
