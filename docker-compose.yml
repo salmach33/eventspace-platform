@@ -1,10 +1,10 @@
-version: "3.9"
-
 services:
 
-  # ── Frontend (image Docker Hub, mise a jour auto par Watchtower) ──────────
+  # ── Frontend (Nginx + React build local) ─────────────────────────────────
   frontend:
-    image: schlarhmo/eventspace-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: eventspace-frontend
     ports:
       - "80:80"
@@ -14,9 +14,11 @@ services:
       - eventspace-network
     restart: unless-stopped
 
-  # ── Backend (image Docker Hub, mise a jour auto par Watchtower) ───────────
+  # ── Backend (Node.js build local) ────────────────────────────────────────
   backend:
-    image: schlarhmo/eventspace-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: eventspace-backend
     environment:
       PORT: 5000
@@ -37,7 +39,7 @@ services:
       - eventspace-network
     restart: unless-stopped
 
-  # ── MongoDB ──────────────────────────────────────────────────────────────
+  # ── MongoDB ───────────────────────────────────────────────────────────────
   mongodb:
     image: mongo:7.0
     container_name: eventspace-mongodb
@@ -63,28 +65,11 @@ services:
       - eventspace-network
     restart: unless-stopped
 
-  # ── Watchtower (mise a jour automatique des conteneurs) ───────────────────
-  watchtower:
-    image: containrrr/watchtower
-    container_name: eventspace-watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      WATCHTOWER_POLL_INTERVAL: 60        # verifie Docker Hub toutes les 60 secondes
-      WATCHTOWER_CLEANUP: "true"          # supprime les anciennes images apres update
-      WATCHTOWER_INCLUDE_RESTARTING: "true"
-    command: eventspace-frontend eventspace-backend  # surveille uniquement ces 2 conteneurs
-    networks:
-      - eventspace-network
-    restart: unless-stopped
-
-# ── Volumes persistants ───────────────────────────────────────────────────────
 volumes:
   mongo_data:
   uploads_data:
   ollama_data:
 
-# ── Reseau interne ────────────────────────────────────────────────────────────
 networks:
   eventspace-network:
     driver: bridge
