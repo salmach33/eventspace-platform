@@ -111,14 +111,21 @@ export function LoginPage() {
 export function RegisterPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "client" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", cin: "", role: "client" });
   const [loading, setLoading] = useState(false);
+
+  const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await API.post("/auth/register", form);
+      const payload = { name: form.name, email: form.email, password: form.password, role: form.role };
+      if (form.role === "owner") {
+        payload.phone = form.phone;
+        payload.cin = form.cin;
+      }
+      const { data } = await API.post("/auth/register", payload);
       login(data);
       toast.success("Compte créé avec succès !");
       navigate("/");
@@ -129,63 +136,97 @@ export function RegisterPage() {
     }
   };
 
+  const isOwner = form.role === "owner";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center px-4 py-8">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
           <Building2 className="w-9 h-9 mx-auto mb-2 text-teal-600" />
           <h1 className="text-2xl font-bold text-gray-800">Créer un compte</h1>
           <p className="text-gray-500 text-sm">Rejoignez la plateforme EventSpace</p>
         </div>
+
+        {/* Sélection du rôle */}
+        <div className="flex gap-3 mb-6">
+          {ROLE_OPTIONS.map((opt) => (
+            <button
+              key={opt.v} type="button"
+              onClick={() => setForm((f) => ({ ...f, role: opt.v, phone: "" }))}
+              className={`flex-1 p-3 rounded-xl border-2 text-left transition ${form.role === opt.v ? "border-teal-600 bg-teal-50" : "border-gray-200 hover:border-teal-300"}`}
+            >
+              <div className="flex items-center gap-1.5 font-semibold text-sm">
+                <opt.Icon className="w-3.5 h-3.5" /> {opt.l}
+              </div>
+              <div className="text-xs text-gray-500">{opt.d}</div>
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nom complet — commun aux deux */}
           <div>
             <label className="text-sm font-medium text-gray-700">Nom complet</label>
             <input
-              type="text" required value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              type="text" required value={form.name} onChange={set("name")}
               className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
-              placeholder="Votre nom"
+              placeholder="Votre nom complet"
             />
           </div>
+
+          {/* Email — commun aux deux */}
           <div>
             <label className="text-sm font-medium text-gray-700">Email</label>
             <input
-              type="email" required value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              type="email" required value={form.email} onChange={set("email")}
               className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
               placeholder="votre@email.com"
             />
           </div>
+
+          {/* Téléphone — propriétaire uniquement */}
+          {isOwner && (
+            <>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  Téléphone <span className="text-teal-600 text-xs">(propriétaire)</span>
+                </label>
+                <input
+                  type="tel" required value={form.phone} onChange={set("phone")}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  placeholder="+212 6XX XXX XXX"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700">
+                  CIN <span className="text-teal-600 text-xs">(Carte d'Identité Nationale)</span>
+                </label>
+                <input
+                  type="text" required value={form.cin} onChange={set("cin")}
+                  className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400 uppercase"
+                  placeholder="AB123456"
+                  maxLength={10}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Mot de passe — commun aux deux */}
           <div>
             <label className="text-sm font-medium text-gray-700">Mot de passe</label>
             <PasswordInput
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={set("password")}
               placeholder="Min. 6 caractères"
             />
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">Je suis</label>
-            <div className="mt-2 flex gap-3">
-              {ROLE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.v} type="button"
-                  onClick={() => setForm({ ...form, role: opt.v })}
-                  className={`flex-1 p-3 rounded-xl border-2 text-left transition ${form.role === opt.v ? "border-teal-600 bg-teal-50" : "border-gray-200 hover:border-teal-300"}`}
-                >
-                  <div className="flex items-center gap-1.5 font-semibold text-sm">
-                    <opt.Icon className="w-3.5 h-3.5" /> {opt.l}
-                  </div>
-                  <div className="text-xs text-gray-500">{opt.d}</div>
-                </button>
-              ))}
-            </div>
-          </div>
+
           <button type="submit" disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 disabled:opacity-50 transition">
-            {loading ? "Création..." : "Créer mon compte"}
+            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 disabled:opacity-50 transition mt-2">
+            {loading ? "Création..." : `Créer mon compte ${isOwner ? "propriétaire" : ""}`}
           </button>
         </form>
+
         <p className="text-center text-sm text-gray-500 mt-6">
           Déjà un compte ?{" "}
           <Link to="/login" className="text-teal-600 font-semibold hover:underline">

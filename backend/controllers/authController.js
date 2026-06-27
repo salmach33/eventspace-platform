@@ -10,6 +10,7 @@ const formatUser = (user, token) => ({
   email: user.email,
   role: user.role,
   phone: user.phone || "",
+  cin: user.cin || "",
   avatar: user.avatar || "",
   token,
 });
@@ -18,7 +19,7 @@ const formatUser = (user, token) => ({
 // POST /api/auth/register
 const register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone, cin } = req.body;
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json({ message: "Email déjà utilisé" });
@@ -26,7 +27,13 @@ const register = async (req, res) => {
     const allowedRoles = ["client", "owner"];
     const userRole = allowedRoles.includes(role) ? role : "client";
 
-    const user = await User.create({ name, email, password, role: userRole });
+    const userData = { name, email, password, role: userRole };
+    if (userRole === "owner") {
+      if (phone) userData.phone = phone;
+      if (cin) userData.cin = cin;
+    }
+
+    const user = await User.create(userData);
     res.status(201).json(formatUser(user, generateToken(user._id)));
   } catch (err) {
     res.status(500).json({ message: err.message });
