@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Heart, Mic2, PartyPopper } from "lucide-react";
+import { Heart, Mic2, PartyPopper, Cake, Gem, Music, BookOpen } from "lucide-react";
 import API from "../services/api";
 import toast from "react-hot-toast";
 
 const EQUIPEMENTS_LIST = ["WiFi", "Parking", "Climatisation", "Cuisine", "Scène", "Sono", "Projecteur", "Tables", "Chaises", "Toilettes", "Sécurité", "Vestiaire"];
 
 const SPACE_TYPES = [
-  { v: "mariage", l: "Mariage", Icon: Heart },
-  { v: "conference", l: "Conférence", Icon: Mic2 },
-  { v: "evenement", l: "Événement", Icon: PartyPopper },
+  { v: "mariage",      l: "Mariage",      Icon: Heart },
+  { v: "conference",   l: "Conférence",   Icon: Mic2 },
+  { v: "evenement",    l: "Événement",    Icon: PartyPopper },
+  { v: "anniversaire", l: "Anniversaire", Icon: Cake },
+  { v: "fiancailles",  l: "Fiançailles",  Icon: Gem },
+  { v: "soiree",       l: "Soirée / Gala", Icon: Music },
+  { v: "seminaire",    l: "Séminaire",    Icon: BookOpen },
 ];
 
 export function CreateSpacePage() {

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Building2, Calendar, CreditCard, Users, MapPin,
-  Eye, Landmark, Wallet, Heart, Mic2, PartyPopper,
+  Eye, Landmark, Wallet, Heart, Mic2, PartyPopper, Cake, Gem, Music, BookOpen,
 } from "lucide-react";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -10,9 +10,13 @@ import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/Statu
 import toast from "react-hot-toast";
 
 const SPACE_TYPE_CONFIG = {
-  mariage:    { label: "Mariage",    Icon: Heart },
-  conference: { label: "Conférence", Icon: Mic2 },
-  evenement:  { label: "Événement",  Icon: PartyPopper },
+  mariage:      { label: "Mariage",      Icon: Heart },
+  conference:   { label: "Conférence",   Icon: Mic2 },
+  evenement:    { label: "Événement",    Icon: PartyPopper },
+  anniversaire: { label: "Anniversaire", Icon: Cake },
+  fiancailles:  { label: "Fiançailles",  Icon: Gem },
+  soiree:       { label: "Soirée / Gala", Icon: Music },
+  seminaire:    { label: "Séminaire",    Icon: BookOpen },
 };
 
 const PAYMENT_METHOD_CONFIG = {
