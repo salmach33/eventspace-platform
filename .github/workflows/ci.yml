@@ -1,0 +1,121 @@
+name: CI — EventSpace Platform
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# Empêche plusieurs runs simultanés sur la même branche
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Job 1 : Vérification du Backend ────────────────────────────────────────
+  backend-check:
+    name: Backend — Vérification syntaxe & dépendances
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Installation des dépendances
+        working-directory: backend
+        run: npm ci --only=production
+
+      - name: Vérification syntaxe — server.js
+        working-directory: backend
+        run: node --check server.js
+
+      - name: Vérification syntaxe — controllers
+        working-directory: backend
+        run: find controllers -name "*.js" -exec node --check {} \;
+
+      - name: Vérification syntaxe — models
+        working-directory: backend
+        run: find models -name "*.js" -exec node --check {} \;
+
+      - name: Vérification syntaxe — routes
+        working-directory: backend
+        run: find routes -name "*.js" -exec node --check {} \;
+
+  # ── Job 2 : Build du Frontend ───────────────────────────────────────────────
+  frontend-build:
+    name: Frontend — Build Vite (React)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Installation des dépendances
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build de production (Vite)
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload artefact build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist-${{ github.sha }}
+          path: frontend/dist/
+          retention-days: 7
+
+  # ── Job 3 : Build des images Docker ────────────────────────────────────────
+  docker-build:
+    name: Docker — Build images (backend + frontend)
+    runs-on: ubuntu-latest
+    needs: [backend-check, frontend-build]
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image Backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: false
+          tags: eventspace-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build image Frontend (multi-stage)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: false
+          tags: eventspace-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Résumé du build
+        run: |
+          echo "## Résumé CI ✅" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Tag |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eventspace-backend\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eventspace-frontend\` | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Déclenché par : \`${{ github.actor }}\` sur \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY

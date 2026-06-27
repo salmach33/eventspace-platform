@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+
+  # ── Frontend (React buildé + Nginx reverse proxy) ────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eventspace-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - eventspace-network
+    restart: unless-stopped
+
+  # ── Backend (Node.js / Express) ──────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eventspace-backend
+    environment:
+      PORT: 5000
+      MONGO_URI: mongodb://mongodb:27017/eventspace
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret}
+      NODE_ENV: production
+      CLIENT_URL: ${CLIENT_URL:-http://localhost}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-mistral}
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - eventspace-network
+    restart: unless-stopped
+
+  # ── MongoDB ──────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: eventspace-mongodb
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - eventspace-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Ollama (LLM local - modèle Mistral) ──────────────────────────────────
+  ollama:
+    image: ollama/ollama
+    container_name: eventspace-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - eventspace-network
+    restart: unless-stopped
+    # Pour activer le GPU (optionnel, nécessite NVIDIA Container Toolkit) :
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+# ── Volumes persistants ───────────────────────────────────────────────────────
+volumes:
+  mongo_data:
+  uploads_data:
+  ollama_data:
+
+# ── Réseau interne ────────────────────────────────────────────────────────────
+networks:
+  eventspace-network:
+    driver: bridge

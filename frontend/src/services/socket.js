@@ -4,7 +4,8 @@ let socket = null;
 
 export const connectSocket = (token) => {
   if (!socket) {
-    socket = io("http://localhost:5000", { auth: { token } });
+    const url = import.meta.env.DEV ? "http://localhost:5000" : window.location.origin;
+    socket = io(url, { auth: { token } });
   }
   return socket;
 };

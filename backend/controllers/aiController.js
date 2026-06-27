@@ -9,20 +9,23 @@ const CACHE_DURATION_MS = 10 * 60 * 1000;
 let spacesCache = null;
 let lastCacheTime = 0;
 
+
 const REQUEST_KEYWORDS = {
   recommendation: [
-    "recommand", "quelle salle", "salle pour", "réserver",
+    "recommand", "quelle salle", "salle pour", "reserver",
     "mariage", "personnes", "budget", "capacite", "disponible",
   ],
   planning: ["comment", "conseil", "organisation", "organiser"],
-  reviews: ["avis", "résumé"],
-  description: ["description", "décrire"],
+  reviews: ["avis", "resume"
+    
+  ],
+  description: ["description", "decrire"],
 };
 
 const TYPE_KEYWORDS = {
   mariage: ["mariage"],
-  conference: ["conférence", "conference", "séminaire", "seminaire"],
-  evenement: ["événement", "evenement", "event"],
+  conference: ["conference", "seminaire"],
+  evenement: ["evenement", "event"],
 };
 
 const MONTHS_FR = {
@@ -42,7 +45,7 @@ function removeAccents(str) {
 }
 
 function extractSpaceType(message) {
-  const msg = message.toLowerCase();
+  const msg = removeAccents(message.toLowerCase());
 
   for (const [type, keywords] of Object.entries(TYPE_KEYWORDS)) {
     if (keywords.some((kw) => msg.includes(kw))) {
@@ -57,12 +60,12 @@ function extractDate(message) {
   const msg = message.toLowerCase();
 
   const textMatch = msg.match(
-    /(\d{1,2})\s+(janvier|f[ée]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[ée]cembre)\s+(\d{4})/
+    /(\d{1,2})\s*(janvier|f[ée]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[ée]cembre)(?:\s+(\d{4}))?/
   );
   if (textMatch) {
     const day = parseInt(textMatch[1], 10);
     const month = MONTHS_FR[removeAccents(textMatch[2])];
-    const year = parseInt(textMatch[3], 10);
+    const year = textMatch[3] ? parseInt(textMatch[3], 10) : new Date().getFullYear();
     return new Date(year, month, day);
   }
 
@@ -99,7 +102,7 @@ async function filterAvailableOnDate(spaces, date) {
 }
 
 function detectRequestType(message) {
-  const msg = message.toLowerCase();
+  const msg = removeAccents(message.toLowerCase());
 
   for (const [type, keywords] of Object.entries(REQUEST_KEYWORDS)) {
     if (keywords.some((kw) => msg.includes(kw))) {
@@ -132,9 +135,9 @@ async function getSpacesFromCache() {
 }
 
 function formatSpace(space) {
-  const city = space.location?.city || "lieu non précisé";
+  const city = space.location?.city || "lieu non precise";
   const equipements = space.equipements?.length ? ` - ${space.equipements.join(", ")}` : "";
-  return `${space.title} (type: ${space.type}): ${space.capacity} personnes, ${space.price}€, ${city}${equipements}`;
+  return `${space.title} (type: ${space.type}): ${space.capacity} personnes, ${space.price} DH, ${city}${equipements}`;
 }
 
 async function getRecommendationsWithData(message) {

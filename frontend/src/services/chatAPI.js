@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/ai";
+const API_URL = import.meta.env.DEV ? "http://localhost:5000/api/ai" : "/api/ai";
 
 export const chatAPI = {
   sendMessage: async (message) => {
