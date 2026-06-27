@@ -189,7 +189,7 @@ export function RegisterPage() {
             <>
               <div>
                 <label className="text-sm font-medium text-gray-700">
-                  Téléphone <span className="text-teal-600 text-xs">(propriétaire)</span>
+                  Téléphone 
                 </label>
                 <input
                   type="tel" required value={form.phone} onChange={set("phone")}
