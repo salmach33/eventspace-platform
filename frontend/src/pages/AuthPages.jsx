@@ -160,7 +160,7 @@ export function LoginPage() {
         </div>
 
         {/* bottom text */}
-        <p className="text-center text-white/30 text-xs mt-6">© 2025 EventSpace — Tous droits réservés</p>
+        <p className="text-center text-white/30 text-xs mt-6">© 2026 EventSpace — Tous droits réservés</p>
       </div>
     </div>
   );
@@ -276,7 +276,7 @@ export function RegisterPage() {
           </div>
         </div>
 
-        <p className="text-center text-white/30 text-xs mt-6">© 2025 EventSpace — Tous droits réservés</p>
+        <p className="text-center text-white/30 text-xs mt-6">© 2026 EventSpace — Tous droits réservés</p>
       </div>
     </div>
   );
