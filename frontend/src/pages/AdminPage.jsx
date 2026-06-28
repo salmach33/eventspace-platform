@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { LayoutDashboard, Building2, Users, CalendarCheck, Wallet, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import AdminSidebar from "../components/admin/AdminSidebar";
+import ConfirmModal from "../components/ConfirmModal";
 import AdminDashboardSection from "../components/admin/AdminDashboardSection";
 import AdminSpacesSection from "../components/admin/AdminSpacesSection";
 import AdminUsersSection from "../components/admin/AdminUsersSection";
@@ -21,6 +22,7 @@ export default function AdminPage() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -89,15 +91,23 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteSpace = async (spaceId) => {
-    if (!confirm("Supprimer cet espace définitivement ?")) return;
-    try {
-      await API.delete(`/spaces/${spaceId}`);
-      setSpaces((prev) => prev.filter((s) => s._id !== spaceId));
-      toast.success("Espace supprimé");
-    } catch {
-      toast.error("Erreur suppression");
-    }
+  const handleDeleteSpace = (spaceId) => {
+    setConfirmModal({
+      message: "Supprimer cet espace ?",
+      description: "Cette action est définitive et irréversible.",
+      variant: "danger",
+      confirmLabel: "Supprimer",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await API.delete(`/spaces/${spaceId}`);
+          setSpaces((prev) => prev.filter((s) => s._id !== spaceId));
+          toast.success("Espace supprimé");
+        } catch {
+          toast.error("Erreur suppression");
+        }
+      },
+    });
   };
 
   const handleBlockUser = async (userId) => {
@@ -130,15 +140,23 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!confirm("Supprimer cet utilisateur définitivement ?")) return;
-    try {
-      await API.delete(`/admin/users/${userId}`);
-      setUsers((prev) => prev.filter((u) => u._id !== userId));
-      toast.success("Utilisateur supprimé");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Erreur suppression");
-    }
+  const handleDeleteUser = (userId) => {
+    setConfirmModal({
+      message: "Supprimer cet utilisateur ?",
+      description: "Toutes ses données seront supprimées définitivement.",
+      variant: "danger",
+      confirmLabel: "Supprimer",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await API.delete(`/admin/users/${userId}`);
+          setUsers((prev) => prev.filter((u) => u._id !== userId));
+          toast.success("Utilisateur supprimé");
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Erreur suppression");
+        }
+      },
+    });
   };
 
   const pendingSpaces = spaces.filter((s) => !s.isValidated && !s.isRefused);
@@ -153,6 +171,16 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex">
+      {confirmModal && (
+        <ConfirmModal
+          message={confirmModal.message}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmLabel={confirmModal.confirmLabel}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
       <AdminSidebar
         items={NAV_ITEMS}
         active={section}

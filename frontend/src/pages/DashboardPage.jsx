@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import toast from "react-hot-toast";
 import { mediaUrl } from "../utils/media";
+import ConfirmModal from "../components/ConfirmModal";
 
 const SPACE_TYPE_CONFIG = {
   mariage:      { label: "Mariage",      Icon: Heart },
@@ -81,6 +82,7 @@ export default function DashboardPage() {
   const [payments, setPayments] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState(null);
   const [tab, setTab] = useState("overview"); // overview | reservations | payments | spaces
   const [statusFilter, setStatusFilter] = useState("all");
   const [spaceStatusFilter, setSpaceStatusFilter] = useState("all");
@@ -109,15 +111,23 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchData(); }, []);
 
-  const handleDeleteSpace = async (spaceId) => {
-    if (!confirm("Supprimer cet espace ?")) return;
-    try {
-      await API.delete(`/spaces/${spaceId}`);
-      toast.success("Espace supprimé");
-      fetchData();
-    } catch {
-      toast.error("Erreur lors de la suppression");
-    }
+  const handleDeleteSpace = (spaceId) => {
+    setConfirmModal({
+      message: "Supprimer cet espace ?",
+      description: "Cette action est définitive et irréversible.",
+      variant: "danger",
+      confirmLabel: "Supprimer",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await API.delete(`/spaces/${spaceId}`);
+          toast.success("Espace supprimé");
+          fetchData();
+        } catch {
+          toast.error("Erreur lors de la suppression");
+        }
+      },
+    });
   };
 
   // Le plus récent paiement par réservation (payments triés du plus récent au plus ancien)
@@ -177,6 +187,16 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      {confirmModal && (
+        <ConfirmModal
+          message={confirmModal.message}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmLabel={confirmModal.confirmLabel}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
       <div className="max-w-7xl mx-auto px-4 pt-8 flex flex-col md:flex-row gap-10">
         {/* Sidebar (owner) */}
         {isOwner && (

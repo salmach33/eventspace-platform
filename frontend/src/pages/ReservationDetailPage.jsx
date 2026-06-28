@@ -11,6 +11,7 @@ import PaymentModal from "../components/PaymentModal";
 import { mediaUrl } from "../utils/media";
 import RejectPaymentModal from "../components/RejectPaymentModal";
 import ReservationReceipt from "../components/ReservationReceipt";
+import ConfirmModal from "../components/ConfirmModal";
 import toast from "react-hot-toast";
 
 const METHOD_CONFIG = {
@@ -36,6 +37,7 @@ export default function ReservationDetailPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -83,26 +85,42 @@ export default function ReservationDetailPage() {
     }
   };
 
-  const handleCancelReservation = async () => {
-    if (!confirm("Confirmer l'annulation ?")) return;
-    try {
-      await API.put(`/reservations/${id}/status`, { status: "cancelled" });
-      toast.success("Réservation annulée");
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Erreur");
-    }
+  const handleCancelReservation = () => {
+    setConfirmModal({
+      message: "Annuler cette réservation ?",
+      description: "Cette action est irréversible.",
+      variant: "warning",
+      confirmLabel: "Oui, annuler",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await API.put(`/reservations/${id}/status`, { status: "cancelled" });
+          toast.success("Réservation annulée");
+          fetchData();
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Erreur");
+        }
+      },
+    });
   };
 
-  const handleCancelPayment = async () => {
-    if (!confirm("Annuler ce paiement ?")) return;
-    try {
-      await API.put(`/payments/${payment._id}/cancel`);
-      toast.success("Paiement annulé");
-      fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Erreur");
-    }
+  const handleCancelPayment = () => {
+    setConfirmModal({
+      message: "Annuler ce paiement ?",
+      description: "Le client pourra effectuer un nouveau paiement.",
+      variant: "warning",
+      confirmLabel: "Oui, annuler",
+      onConfirm: async () => {
+        setConfirmModal(null);
+        try {
+          await API.put(`/payments/${payment._id}/cancel`);
+          toast.success("Paiement annulé");
+          fetchData();
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Erreur");
+        }
+      },
+    });
   };
 
   const handleConfirmPayment = async () => {
@@ -125,6 +143,16 @@ export default function ReservationDetailPage() {
       )}
       {showReceipt && (
         <ReservationReceipt reservation={res} payment={payment} onClose={() => setShowReceipt(false)} />
+      )}
+      {confirmModal && (
+        <ConfirmModal
+          message={confirmModal.message}
+          description={confirmModal.description}
+          variant={confirmModal.variant}
+          confirmLabel={confirmModal.confirmLabel}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
       )}
 
       {/* Header */}

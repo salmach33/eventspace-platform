@@ -8,6 +8,7 @@ import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
 import PaymentModal from "../components/PaymentModal";
+import ConfirmModal from "../components/ConfirmModal";
 import { mediaUrl } from "../utils/media";
 import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import toast from "react-hot-toast";
@@ -34,6 +35,7 @@ export default function SpaceDetailPage() {
   const [myReservations, setMyReservations] = useState([]);
   const [myPayments, setMyPayments] = useState([]);
   const [payingReservation, setPayingReservation] = useState(null);
+  const [confirm, setConfirm] = useState(null); // { message, onConfirm }
 
   // Review form
   const [revForm, setRevForm] = useState({ rating: 5, comment: "" });
@@ -62,15 +64,23 @@ export default function SpaceDetailPage() {
 
   useEffect(() => { fetchMyData(); }, [id, user]);
 
-  const handleCancelPayment = async (paymentId) => {
-    if (!confirm("Annuler ce paiement ?")) return;
-    try {
-      await API.put(`/payments/${paymentId}/cancel`);
-      toast.success("Paiement annulé");
-      fetchMyData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Erreur");
-    }
+  const handleCancelPayment = (paymentId) => {
+    setConfirm({
+      message: "Annuler ce paiement ?",
+      description: "Cette action est irréversible.",
+      variant: "warning",
+      confirmLabel: "Oui, annuler",
+      onConfirm: async () => {
+        setConfirm(null);
+        try {
+          await API.put(`/payments/${paymentId}/cancel`);
+          toast.success("Paiement annulé");
+          fetchMyData();
+        } catch (err) {
+          toast.error(err.response?.data?.message || "Erreur");
+        }
+      },
+    });
   };
 
   const paymentByReservation = {};
@@ -137,6 +147,16 @@ export default function SpaceDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      {confirm && (
+        <ConfirmModal
+          message={confirm.message}
+          description={confirm.description}
+          variant={confirm.variant}
+          confirmLabel={confirm.confirmLabel}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
       {payingReservation && (
         <PaymentModal
           reservation={payingReservation}
