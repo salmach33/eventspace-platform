@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -19,22 +18,17 @@ async function createAdmin() {
 
   const existing = await User.findOne({ email: ADMIN.email });
   if (existing) {
-    const salt = await bcrypt.genSalt(10);
+    // Assign plain password — pre("save") hook will hash it
     existing.role = "admin";
-    existing.password = await bcrypt.hash(ADMIN.password, salt);
+    existing.password = ADMIN.password;
     await existing.save();
     console.log("✔  Compte admin mis à jour (mot de passe réinitialisé)");
-    console.log("   Email    :", ADMIN.email);
-    console.log("   Password :", ADMIN.password);
-    await mongoose.disconnect();
-    return;
+  } else {
+    // User.create triggers pre("save") which hashes the password
+    await User.create(ADMIN);
+    console.log("✔  Compte admin créé avec succès !");
   }
 
-  const salt = await bcrypt.genSalt(10);
-  const hashed = await bcrypt.hash(ADMIN.password, salt);
-
-  await User.create({ ...ADMIN, password: hashed });
-  console.log("✔  Compte admin créé avec succès !");
   console.log("   Email    :", ADMIN.email);
   console.log("   Password :", ADMIN.password);
 
