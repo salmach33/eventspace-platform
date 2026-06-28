@@ -55,9 +55,7 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/10 rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto text-center px-4 py-28">
-          <span className="inline-flex items-center gap-2 bg-teal-500/20 border border-teal-400/30 text-teal-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            <Zap className="w-3.5 h-3.5" /> Réservation instantanée disponible
-          </span>
+
           <h1 className="text-5xl md:text-6xl font-extrabold mb-5 leading-tight">
             L'espace parfait pour<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 to-emerald-300">
@@ -171,24 +169,35 @@ export default function HomePage() {
       )}
 
       {/* ── How it works ── */}
-      <div className="max-w-5xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-800">Comment ça marche ?</h2>
-          <p className="text-gray-500 mt-2">Réservez votre espace idéal en 3 étapes simples</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc }) => (
-            <div key={step} className="relative text-center">
-              <div className="w-16 h-16 mx-auto mb-5 bg-teal-50 rounded-2xl flex items-center justify-center">
-                <Icon className="w-8 h-8 text-teal-600" />
+      <div className="bg-white py-16">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-800">Comment ça marche ?</h2>
+            <p className="text-gray-500 mt-2">Réservez votre espace idéal en 3 étapes simples</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+            {/* connecting line (desktop) */}
+            <div className="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-teal-200 via-teal-400 to-teal-200 z-0" />
+
+            {HOW_IT_WORKS.map(({ icon: Icon, step, title, desc, color }) => (
+              <div key={step} className="relative z-10 bg-gray-50 rounded-2xl p-7 text-center border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="relative inline-flex mb-5">
+                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg ${
+                    step === "01" ? "bg-gradient-to-br from-teal-500 to-teal-600" :
+                    step === "02" ? "bg-gradient-to-br from-indigo-500 to-indigo-600" :
+                                   "bg-gradient-to-br from-emerald-500 to-emerald-600"
+                  }`}>
+                    <Icon className="w-9 h-9 text-white" strokeWidth={1.75} />
+                  </div>
+                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white border-2 border-gray-200 text-xs font-black text-gray-500 flex items-center justify-center shadow-sm">
+                    {step.replace("0", "")}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
               </div>
-              <span className="absolute top-0 right-1/2 translate-x-8 -translate-y-1 text-5xl font-black text-gray-100 select-none pointer-events-none">
-                {step}
-              </span>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
