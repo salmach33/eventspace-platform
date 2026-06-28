@@ -4,9 +4,11 @@ import { Search, MessageCircle, Building2, ArrowRight, Hand } from "lucide-react
 import API from "../services/api";
 import { getSocket } from "../services/socket";
 import { useAuth } from "../context/AuthContext";
+import { useNotif } from "../context/NotifContext";
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const { markMessagesRead } = useNotif();
   const [searchParams] = useSearchParams();
   const spaceId = searchParams.get("spaceId");
   const partnerId = searchParams.get("ownerId") || searchParams.get("clientId");
@@ -41,7 +43,10 @@ export default function MessagesPage() {
     }
   }, []);
 
-  useEffect(() => { fetchConversations(); }, []);
+  useEffect(() => {
+    fetchConversations();
+    markMessagesRead();
+  }, []);
 
   // Auto-open conversation from URL params
   useEffect(() => {
