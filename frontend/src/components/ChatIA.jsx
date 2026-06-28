@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, X } from "lucide-react";
+import { Bot, X, Minus } from "lucide-react";
 import { useChat } from "../hooks/useChat";
 
 export default function ChatIA() {
@@ -7,6 +7,9 @@ export default function ChatIA() {
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef(null);
+
+  const minimize = () => setIsOpen(false); // garde les messages
+  const close = () => { setIsOpen(false); clearMessages(); };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,6 +41,11 @@ export default function ChatIA() {
           title="Ouvrir le chat IA"
         >
           <Bot className="w-6 h-6" />
+          {messages.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              {messages.length > 9 ? "9+" : messages.length}
+            </span>
+          )}
         </button>
       )}
 
@@ -48,17 +56,28 @@ export default function ChatIA() {
           <div className="bg-gradient-to-r from-teal-700 to-teal-500 text-white p-4 flex justify-between items-center">
             <div>
               <h3 className="font-bold text-lg">Chat IA EventSpace</h3>
-              <p className="text-sm text-teal-100">Répondez intelligemment</p>
+              <p className="text-sm text-teal-100">
+                {messages.length > 0 ? `${messages.length} message${messages.length > 1 ? "s" : ""}` : "Répondez intelligemment"}
+              </p>
             </div>
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                clearMessages();
-              }}
-              className="text-white hover:bg-teal-700 rounded-full p-2 transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              {/* Réduire — garde la conversation */}
+              <button
+                onClick={minimize}
+                className="text-white hover:bg-teal-600 rounded-full p-2 transition"
+                title="Réduire"
+              >
+                <Minus className="w-5 h-5" />
+              </button>
+              {/* Fermer — efface la conversation */}
+              <button
+                onClick={close}
+                className="text-white hover:bg-teal-600 rounded-full p-2 transition"
+                title="Fermer et effacer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
