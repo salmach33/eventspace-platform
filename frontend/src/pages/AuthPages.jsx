@@ -109,14 +109,6 @@ export function LoginPage() {
       <Background />
 
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-5 py-2.5 rounded-2xl">
-            <Building2 className="w-6 h-6 text-teal-300" />
-            
-          </div>
-        </div>
-
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-black/30 overflow-hidden">
           {/* top accent */}
@@ -206,14 +198,6 @@ export function RegisterPage() {
       <Background />
 
       <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-5 py-2.5 rounded-2xl">
-            <Building2 className="w-6 h-6 text-teal-300" />
-            <span className="text-xl font-extrabold tracking-tight">EventSpace</span>
-          </div>
-        </div>
-
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-black/30 overflow-hidden">
           <div className="h-1.5 bg-gradient-to-r from-teal-400 via-teal-500 to-emerald-400" />
