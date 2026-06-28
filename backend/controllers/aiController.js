@@ -10,15 +10,32 @@ let spacesCache = null;
 let lastCacheTime = 0;
 
 
+const GREETING_KEYWORDS = [
+  "bonjour", "bonsoir", "salut", "hello", "hi", "coucou", "hey",
+  "salam", "marhba", "ahlan",
+];
+
+const PRESENTATION = `Bonjour et bienvenue sur **EventSpace** ! 🎉
+
+Je suis votre assistant IA. Voici ce que je peux faire pour vous :
+
+🏛️ **Trouver une salle** — Dites-moi votre type d'événement, le nombre de personnes ou votre budget et je vous recommande les meilleurs espaces.
+
+📅 **Vérifier les disponibilités** — Mentionnez une date (ex. "le 15 juillet") et je filtre les salles libres ce jour-là.
+
+💡 **Conseils d'organisation** — Posez-moi vos questions sur l'organisation de mariages, conférences, anniversaires, soirées…
+
+📋 **Types d'espaces disponibles** : Mariage · Conférence · Anniversaire · Fiançailles · Soirée / Gala · Séminaire · Événement
+
+Comment puis-je vous aider aujourd'hui ?`;
+
 const REQUEST_KEYWORDS = {
   recommendation: [
     "recommand", "quelle salle", "salle pour", "reserver",
     "mariage", "personnes", "budget", "capacite", "disponible",
   ],
   planning: ["comment", "conseil", "organisation", "organiser"],
-  reviews: ["avis", "resume"
-    
-  ],
+  reviews: ["avis", "resume"],
   description: ["description", "decrire"],
 };
 
@@ -103,6 +120,11 @@ async function filterAvailableOnDate(spaces, date) {
     );
     return !blockedManually;
   });
+}
+
+function isGreeting(message) {
+  const msg = removeAccents(message.toLowerCase()).trim();
+  return GREETING_KEYWORDS.some((kw) => msg === kw || msg.startsWith(kw + " ") || msg.startsWith(kw + ",") || msg.startsWith(kw + "!"));
 }
 
 function detectRequestType(message) {
@@ -214,6 +236,11 @@ exports.chat = async (req, res) => {
         success: false,
         error: `Message trop long (max ${MAX_MESSAGE_LENGTH} caractères)`,
       });
+    }
+
+    // Salutation → présentation instantanée sans appel Ollama
+    if (isGreeting(message)) {
+      return res.json({ success: true, response: PRESENTATION, type: "greeting" });
     }
 
     const type = detectRequestType(message);

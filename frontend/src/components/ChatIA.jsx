@@ -2,6 +2,18 @@ import { useState, useRef, useEffect } from "react";
 import { Bot, X, Minus } from "lucide-react";
 import { useChat } from "../hooks/useChat";
 
+function renderMarkdown(text) {
+  return text.split("\n").map((line, i) => {
+    const parts = line.split(/\*\*(.+?)\*\*/g);
+    return (
+      <span key={i}>
+        {parts.map((p, j) => j % 2 === 1 ? <strong key={j}>{p}</strong> : p)}
+        {"\n"}
+      </span>
+    );
+  });
+}
+
 export default function ChatIA() {
   const { messages, loading, error, sendMessage, clearMessages } = useChat();
   const [input, setInput] = useState("");
@@ -120,7 +132,9 @@ export default function ChatIA() {
                         : "bg-gray-200 text-gray-800 rounded-bl-none"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {msg.sender === "bot" ? renderMarkdown(msg.text) : msg.text}
+                    </p>
                   </div>
                 </div>
               ))
