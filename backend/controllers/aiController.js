@@ -15,17 +15,17 @@ const GREETING_KEYWORDS = [
   "salam", "marhba", "ahlan",
 ];
 
-const PRESENTATION = `Bonjour et bienvenue sur **EventSpace** ! 🎉
+const PRESENTATION = `Bonjour et bienvenue sur **EventSpace** !
 
 Je suis votre assistant IA. Voici ce que je peux faire pour vous :
 
-🏛️ **Trouver une salle** — Dites-moi votre type d'événement, le nombre de personnes ou votre budget et je vous recommande les meilleurs espaces.
+**Trouver une salle** — Dites-moi votre type d'événement, le nombre de personnes ou votre budget et je vous recommande les meilleurs espaces.
 
-📅 **Vérifier les disponibilités** — Mentionnez une date (ex. "le 15 juillet") et je filtre les salles libres ce jour-là.
+**Vérifier les disponibilités** — Mentionnez une date (ex. "le 15 juillet") et je filtre les salles libres ce jour-là.
 
-💡 **Conseils d'organisation** — Posez-moi vos questions sur l'organisation de mariages, conférences, anniversaires, soirées…
+**Conseils d'organisation** — Posez-moi vos questions sur l'organisation de mariages, conférences, anniversaires, soirées...
 
-📋 **Types d'espaces disponibles** : Mariage · Conférence · Anniversaire · Fiançailles · Soirée / Gala · Séminaire · Événement
+**Types d'espaces disponibles** : Mariage · Conférence · Anniversaire · Fiançailles · Soirée / Gala · Séminaire · Événement
 
 Comment puis-je vous aider aujourd'hui ?`;
 
