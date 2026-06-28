@@ -8,6 +8,7 @@ import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import toast from "react-hot-toast";
+import { mediaUrl } from "../utils/media";
 
 const SPACE_TYPE_CONFIG = {
   mariage:      { label: "Mariage",      Icon: Heart },
@@ -285,7 +286,7 @@ export default function DashboardPage() {
                         </thead>
                         <tbody>
                           {filteredSpaces.map((s) => {
-                            const img = s.images?.[0] ? `http://localhost:5000${s.images[0]}` : null;
+                            const img = mediaUrl(s.images?.[0]);
                             const TypeIcon = SPACE_TYPE_CONFIG[s.type]?.Icon;
                             return (
                               <tr
@@ -391,7 +392,7 @@ export default function DashboardPage() {
                         <tbody>
                           {filteredReservations.map((res) => {
                             const payment = paymentByReservation[res._id];
-                            const spaceImg = res.space?.images?.[0] ? `http://localhost:5000${res.space.images[0]}` : null;
+                            const spaceImg = mediaUrl(res.space?.images?.[0]);
                             return (
                               <tr
                                 key={res._id}

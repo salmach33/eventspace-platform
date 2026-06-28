@@ -3,6 +3,7 @@ import {
   Building2, CheckCircle2, XCircle, RotateCcw, Eye, Trash2, MapPin,
 } from "lucide-react";
 import AdminFilterBar from "./AdminFilterBar";
+import { mediaUrl } from "../../utils/media";
 import { useAdminTable, SortableTh, AdminPagination } from "./AdminTableControls";
 import { Badge, SPACE_STATUS_BADGE, TYPE_CONFIG } from "./adminConfig";
 
@@ -94,7 +95,7 @@ export default function AdminSpacesSection({ spaces, onValidate, onRefuse, onPen
             </thead>
             <tbody className="divide-y divide-gray-100">
               {pageItems.map((space) => {
-                const img = space.images?.[0] ? `http://localhost:5000${space.images[0]}` : null;
+                const img = mediaUrl(space.images?.[0]);
                 const typeCfg = TYPE_CONFIG[space.type];
                 const status = spaceStatus(space);
                 return (

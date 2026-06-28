@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNotif } from "../context/NotifContext";
 import { useState } from "react";
+import { mediaUrl } from "../utils/media";
 import {
   Building2, Bell, MessageCircle, ShieldCheck, LayoutDashboard, User,
   Calendar, CheckCircle2, XCircle, Ban, CreditCard, Undo2,
@@ -54,7 +55,7 @@ export default function Navbar() {
     if (!showNotifs) markRead();
   };
 
-  const avatarSrc = user?.avatar ? `http://localhost:5000${user.avatar}` : null;
+  const avatarSrc = mediaUrl(user?.avatar);
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">

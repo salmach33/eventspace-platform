@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Heart, Mic2, PartyPopper, MapPin, Star, Users, Cake, Gem, Music, BookOpen, ArrowRight } from "lucide-react";
+import { mediaUrl } from "../utils/media";
 
 const TYPE_CONFIG = {
   mariage:      { label: "Mariage",             Icon: Heart,       badge: "bg-rose-100 text-rose-700",     dot: "bg-rose-500" },
@@ -13,7 +14,7 @@ const TYPE_CONFIG = {
 
 export default function SpaceCard({ space }) {
   const imgSrc = space.images?.[0]
-    ? `http://localhost:5000${space.images[0]}`
+    ? mediaUrl(space.images[0])
     : "https://via.placeholder.com/400x250?text=Espace";
 
   const typeCfg = TYPE_CONFIG[space.type];

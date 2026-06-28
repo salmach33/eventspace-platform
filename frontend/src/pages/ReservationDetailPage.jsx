@@ -8,6 +8,7 @@ import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import PaymentModal from "../components/PaymentModal";
+import { mediaUrl } from "../utils/media";
 import RejectPaymentModal from "../components/RejectPaymentModal";
 import ReservationReceipt from "../components/ReservationReceipt";
 import toast from "react-hot-toast";
@@ -68,7 +69,7 @@ export default function ReservationDetailPage() {
   const res = reservation;
   const isOwner = user._id === res.owner?._id;
   const isAdmin = user.role === "admin";
-  const spaceImg = res.space?.images?.[0] ? `http://localhost:5000${res.space.images[0]}` : null;
+  const spaceImg = mediaUrl(res.space?.images?.[0]);
   const canPay = !payment || payment.status === "cancelled";
   const MethodIcon = payment ? METHOD_CONFIG[payment.method]?.Icon : null;
 

@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { Badge, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import PaymentInvoice from "../components/PaymentInvoice";
 import toast from "react-hot-toast";
+import { mediaUrl } from "../utils/media";
 
 const METHOD_CONFIG = {
   virement: { label: "Virement bancaire", Icon: Landmark },
@@ -55,7 +56,7 @@ export default function PaymentDetailPage() {
 
   const res = payment.reservation;
   const isOwner = user._id === payment.owner?._id;
-  const spaceImg = res?.space?.images?.[0] ? `http://localhost:5000${res.space.images[0]}` : null;
+  const spaceImg = mediaUrl(res?.space?.images?.[0]);
   const MethodIcon = METHOD_CONFIG[payment.method]?.Icon;
 
   return (

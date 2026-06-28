@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Heart, Mic2, PartyPopper, X, Cake, Gem, Music, BookOpen } from "lucide-react";
 import API from "../services/api";
 import toast from "react-hot-toast";
+import { mediaUrl } from "../utils/media";
 
 const EQUIPEMENTS_LIST = ["WiFi", "Parking", "Climatisation", "Cuisine", "Scène", "Sono", "Projecteur", "Tables", "Chaises", "Toilettes", "Sécurité", "Vestiaire"];
 
@@ -211,7 +212,7 @@ export default function EditSpacePage() {
               <div className="mt-2 flex gap-2 flex-wrap">
                 {existingImages.map((img, i) => (
                   <div key={i} className="relative group">
-                    <img src={`http://localhost:5000${img}`} className="w-20 h-20 object-cover rounded-lg" />
+                    <img src={mediaUrl(img)} className="w-20 h-20 object-cover rounded-lg" />
                     <button
                       type="button"
                       onClick={() => removeExistingImage(img)}

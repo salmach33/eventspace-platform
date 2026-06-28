@@ -3,6 +3,7 @@ import { User, Building2, ShieldCheck } from "lucide-react";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
+import { mediaUrl } from "../utils/media";
 
 const ROLE_CONFIG = {
   client: { label: "Client", Icon: User },
@@ -57,7 +58,7 @@ export default function ProfilePage() {
   });
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(
-    user?.avatar ? `http://localhost:5000${user.avatar}` : null
+    mediaUrl(user?.avatar)
   );
   const [profileLoading, setProfileLoading] = useState(false);
 
@@ -94,7 +95,7 @@ export default function ProfilePage() {
       setAvatarFile(null);
       // Mettre à jour l'aperçu avec l'URL serveur réelle
       if (data.avatar) {
-        setAvatarPreview(`http://localhost:5000${data.avatar}`);
+        setAvatarPreview(mediaUrl(data.avatar));
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Erreur lors de la mise à jour");

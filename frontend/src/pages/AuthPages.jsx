@@ -1,50 +1,94 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Building2, User } from "lucide-react";
+import { Building2, User, Eye, EyeOff, Mail, Lock, Phone, CreditCard, ArrowRight, Check } from "lucide-react";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
-const ROLE_OPTIONS = [
-  { v: "client", l: "Client", d: "Je recherche des espaces", Icon: User },
-  { v: "owner", l: "Propriétaire", d: "Je propose des espaces", Icon: Building2 },
-];
+/* ── shared helpers ─────────────────────────────────────────── */
 
-function EyeIcon({ open }) {
-  return open ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-    </svg>
-  );
-}
-
-function PasswordInput({ value, onChange, placeholder }) {
+function PasswordInput({ value, onChange, placeholder = "••••••••", label }) {
   const [show, setShow] = useState(false);
   return (
-    <div className="relative mt-1">
-      <input
-        type={show ? "text" : "password"}
-        required
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder || "••••••••"}
-        className="w-full border border-gray-200 rounded-lg px-4 py-3 pr-11 focus:outline-none focus:ring-2 focus:ring-teal-400"
-      />
-      <button
-        type="button"
-        onClick={() => setShow(!show)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-      >
-        <EyeIcon open={show} />
-      </button>
+    <div>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+      <div className="relative">
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input
+          type={show ? "text" : "password"}
+          required
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className="w-full pl-10 pr-11 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 bg-gray-50 focus:bg-white transition"
+        />
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        >
+          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
     </div>
   );
 }
+
+function TextInput({ icon: Icon, label, type = "text", value, onChange, placeholder, required = true, maxLength }) {
+  return (
+    <div>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
+      <div className="relative">
+        {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />}
+        <input
+          type={type}
+          required={required}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          className={`w-full ${Icon ? "pl-10" : "pl-4"} pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-400 bg-gray-50 focus:bg-white transition`}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── left decorative panel ──────────────────────────────────── */
+
+function HeroPanel({ title, sub, features }) {
+  return (
+    <div className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-slate-900 via-teal-900 to-teal-700 text-white p-12 rounded-3xl relative overflow-hidden">
+      {/* decorative circles */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-teal-500/20 rounded-full pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-teal-400/10 rounded-full pointer-events-none" />
+
+      <div className="relative">
+        <div className="flex items-center gap-2 mb-12">
+          <Building2 className="w-8 h-8 text-teal-300" />
+          <span className="text-2xl font-extrabold tracking-tight">EventSpace</span>
+        </div>
+        <h2 className="text-4xl font-extrabold leading-tight mb-4">{title}</h2>
+        <p className="text-teal-200 text-lg leading-relaxed">{sub}</p>
+      </div>
+
+      <ul className="relative space-y-4">
+        {features.map((f) => (
+          <li key={f} className="flex items-center gap-3 text-teal-100">
+            <span className="w-6 h-6 rounded-full bg-teal-500/30 border border-teal-400/40 flex items-center justify-center flex-shrink-0">
+              <Check className="w-3.5 h-3.5 text-teal-300" />
+            </span>
+            {f}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════════════════════════════ */
 
 export function LoginPage() {
   const { login } = useAuth();
@@ -68,45 +112,99 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <Building2 className="w-9 h-9 mx-auto mb-2 text-teal-600" />
-          <h1 className="text-2xl font-bold text-gray-800">Connexion</h1>
-          <p className="text-gray-500 text-sm">Accédez à votre espace EventSpace</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email" required value={form.email}
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-6 items-stretch">
+
+        <HeroPanel
+          title={"Bienvenue sur\nEventSpace"}
+          sub="La plateforme de référence pour réserver des espaces événementiels au Maroc."
+          features={[
+            "Centaines d'espaces vérifiés",
+            "Réservation en quelques clics",
+            "Paiement 100 % sécurisé",
+            "Support disponible 24/7",
+          ]}
+        />
+
+        {/* Form card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 flex flex-col justify-center">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-8 lg:hidden">
+            <Building2 className="w-7 h-7 text-teal-600" />
+            <span className="text-xl font-extrabold text-gray-800">EventSpace</span>
+          </div>
+
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Se connecter</h1>
+          <p className="text-gray-500 text-sm mb-8">Accédez à votre espace personnel</p>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <TextInput
+              icon={Mail}
+              label="Adresse email"
+              type="email"
+              value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
               placeholder="votre@email.com"
             />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-700">Mot de passe</label>
             <PasswordInput
+              label="Mot de passe"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
             />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-teal-100 mt-2"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Connexion…
+                </span>
+              ) : (
+                <>Se connecter <ArrowRight className="w-4 h-4" /></>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p className="text-sm text-gray-500">
+              Pas encore de compte ?{" "}
+              <Link to="/register" className="text-teal-600 font-semibold hover:text-teal-700 hover:underline">
+                Créer un compte
+              </Link>
+            </p>
           </div>
-          <button type="submit" disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 disabled:opacity-50 transition">
-            {loading ? "Connexion..." : "Se connecter"}
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Pas de compte ?{" "}
-          <Link to="/register" className="text-teal-600 font-semibold hover:underline">
-            S'inscrire
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
 }
+
+/* ══════════════════════════════════════════════════════════════
+   REGISTER PAGE
+══════════════════════════════════════════════════════════════ */
+
+const ROLE_OPTIONS = [
+  {
+    v: "client",
+    l: "Client",
+    d: "Je cherche un espace",
+    Icon: User,
+    gradient: "from-teal-500 to-emerald-500",
+  },
+  {
+    v: "owner",
+    l: "Propriétaire",
+    d: "Je propose un espace",
+    Icon: Building2,
+    gradient: "from-indigo-500 to-purple-500",
+  },
+];
 
 export function RegisterPage() {
   const { login } = useAuth();
@@ -139,100 +237,134 @@ export function RegisterPage() {
   const isOwner = form.role === "owner";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 to-emerald-50 flex items-center justify-center px-4 py-8">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-6">
-          <Building2 className="w-9 h-9 mx-auto mb-2 text-teal-600" />
-          <h1 className="text-2xl font-bold text-gray-800">Créer un compte</h1>
-          <p className="text-gray-500 text-sm">Rejoignez la plateforme EventSpace</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-emerald-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-5xl grid lg:grid-cols-2 gap-6 items-stretch">
 
-        {/* Sélection du rôle */}
-        <div className="flex gap-3 mb-6">
-          {ROLE_OPTIONS.map((opt) => (
-            <button
-              key={opt.v} type="button"
-              onClick={() => setForm((f) => ({ ...f, role: opt.v, phone: "" }))}
-              className={`flex-1 p-3 rounded-xl border-2 text-left transition ${form.role === opt.v ? "border-teal-600 bg-teal-50" : "border-gray-200 hover:border-teal-300"}`}
-            >
-              <div className="flex items-center gap-1.5 font-semibold text-sm">
-                <opt.Icon className="w-3.5 h-3.5" /> {opt.l}
-              </div>
-              <div className="text-xs text-gray-500">{opt.d}</div>
-            </button>
-          ))}
-        </div>
+        <HeroPanel
+          title={"Rejoignez\nEventSpace"}
+          sub="Créez votre compte et commencez à organiser des événements inoubliables dès aujourd'hui."
+          features={[
+            "Accès à +500 espaces",
+            "Réservation instantanée",
+            "Assistance dédiée",
+            "100 % gratuit à l'inscription",
+          ]}
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nom complet — commun aux deux */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Nom complet</label>
-            <input
-              type="text" required value={form.name} onChange={set("name")}
-              className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
+        {/* Form card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 flex flex-col justify-center">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-6 lg:hidden">
+            <Building2 className="w-7 h-7 text-teal-600" />
+            <span className="text-xl font-extrabold text-gray-800">EventSpace</span>
+          </div>
+
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-1">Créer un compte</h1>
+          <p className="text-gray-500 text-sm mb-6">Rejoignez la plateforme EventSpace</p>
+
+          {/* Role selector */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {ROLE_OPTIONS.map((opt) => {
+              const active = form.role === opt.v;
+              return (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, role: opt.v, phone: "", cin: "" }))}
+                  className={`relative flex flex-col items-center gap-1.5 p-4 rounded-2xl border-2 transition-all duration-200 text-center overflow-hidden
+                    ${active ? "border-teal-600 bg-teal-50 shadow-sm" : "border-gray-200 hover:border-gray-300 bg-white"}`}
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${opt.gradient}`}>
+                    <opt.Icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className={`font-bold text-sm ${active ? "text-teal-700" : "text-gray-700"}`}>{opt.l}</span>
+                  <span className="text-xs text-gray-400">{opt.d}</span>
+                  {active && (
+                    <span className="absolute top-2 right-2 w-4 h-4 bg-teal-600 rounded-full flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <TextInput
+              icon={User}
+              label="Nom complet"
+              value={form.name}
+              onChange={set("name")}
               placeholder="Votre nom complet"
             />
-          </div>
-
-          {/* Email — commun aux deux */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email" required value={form.email} onChange={set("email")}
-              className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            <TextInput
+              icon={Mail}
+              label="Adresse email"
+              type="email"
+              value={form.email}
+              onChange={set("email")}
               placeholder="votre@email.com"
             />
-          </div>
 
-          {/* Téléphone — propriétaire uniquement */}
-          {isOwner && (
-            <>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  Téléphone 
-                </label>
-                <input
-                  type="tel" required value={form.phone} onChange={set("phone")}
-                  className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400"
+            {isOwner && (
+              <div className="grid grid-cols-2 gap-3">
+                <TextInput
+                  icon={Phone}
+                  label="Téléphone"
+                  type="tel"
+                  value={form.phone}
+                  onChange={set("phone")}
                   placeholder="+212 6XX XXX XXX"
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">
-                  CIN <span className="text-teal-600 text-xs">(Carte d'Identité Nationale)</span>
-                </label>
-                <input
-                  type="text" required value={form.cin} onChange={set("cin")}
-                  className="mt-1 w-full border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-400 uppercase"
+                <TextInput
+                  icon={CreditCard}
+                  label="CIN"
+                  value={form.cin}
+                  onChange={set("cin")}
                   placeholder="AB123456"
                   maxLength={10}
                 />
               </div>
-            </>
-          )}
+            )}
 
-          {/* Mot de passe — commun aux deux */}
-          <div>
-            <label className="text-sm font-medium text-gray-700">Mot de passe</label>
             <PasswordInput
+              label="Mot de passe"
               value={form.password}
               onChange={set("password")}
               placeholder="Min. 6 caractères"
             />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all duration-200 shadow-md shadow-teal-100 mt-1"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Création…
+                </span>
+              ) : (
+                <>
+                  Créer mon compte {isOwner ? "propriétaire" : ""}
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+            <p className="text-sm text-gray-500">
+              Déjà un compte ?{" "}
+              <Link to="/login" className="text-teal-600 font-semibold hover:text-teal-700 hover:underline">
+                Se connecter
+              </Link>
+            </p>
           </div>
-
-          <button type="submit" disabled={loading}
-            className="w-full bg-teal-600 text-white py-3 rounded-xl font-bold hover:bg-teal-700 disabled:opacity-50 transition mt-2">
-            {loading ? "Création..." : `Créer mon compte ${isOwner ? "propriétaire" : ""}`}
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Déjà un compte ?{" "}
-          <Link to="/login" className="text-teal-600 font-semibold hover:underline">
-            Se connecter
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );

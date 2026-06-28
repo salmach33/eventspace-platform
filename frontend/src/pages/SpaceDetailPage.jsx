@@ -8,6 +8,7 @@ import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import AvailabilityCalendar from "../components/AvailabilityCalendar";
 import PaymentModal from "../components/PaymentModal";
+import { mediaUrl } from "../utils/media";
 import { Badge, STATUS_CONFIG, PAYMENT_STATUS_CONFIG } from "../components/StatusBadge";
 import toast from "react-hot-toast";
 
@@ -149,7 +150,7 @@ export default function SpaceDetailPage() {
         <div className="max-w-7xl mx-auto">
           <div className="relative">
             <img
-              src={space.images?.[activeImg] ? `http://localhost:5000${space.images[activeImg]}` : "https://via.placeholder.com/900x400?text=Espace"}
+              src={mediaUrl(space.images?.[activeImg]) || "https://via.placeholder.com/900x400?text=Espace"}
               alt={space.title}
               className="w-full h-80 md:h-[420px] object-cover"
             />
@@ -159,7 +160,7 @@ export default function SpaceDetailPage() {
               {space.images.map((img, i) => (
                 <img
                   key={i}
-                  src={`http://localhost:5000${img}`}
+                  src={mediaUrl(img)}
                   onClick={() => setActiveImg(i)}
                   className={`h-16 w-24 object-cover rounded-lg cursor-pointer flex-shrink-0 ${i === activeImg ? "ring-2 ring-teal-400 opacity-100" : "opacity-60 hover:opacity-80"}`}
                 />
