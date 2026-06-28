@@ -113,7 +113,7 @@ export function LoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm border border-white/20 text-white px-5 py-2.5 rounded-2xl">
             <Building2 className="w-6 h-6 text-teal-300" />
-            <span className="text-xl font-extrabold tracking-tight">EventSpace</span>
+            
           </div>
         </div>
 
