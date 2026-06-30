@@ -15,6 +15,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const statsRoutes = require("./routes/statsRoutes");
 const { warmUp } = require("./utils/ollamaClient");
 
 dotenv.config();
@@ -45,6 +46,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/stats", statsRoutes);
 
 app.get("/", (req, res) => res.send("EventSpace API Running..."));
 

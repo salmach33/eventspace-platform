@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search, Heart, Mic2, PartyPopper, Cake, Gem, Music, BookOpen,
@@ -24,20 +24,45 @@ const HOW_IT_WORKS = [
   { icon: CheckCircle,  step: "03", title: "Célébrez",    desc: "Profitez de votre événement inoubliable dans l'espace de vos rêves." },
 ];
 
-const STATS = [
-  { value: "500+", label: "Espaces disponibles" },
-  { value: "12k+", label: "Événements organisés" },
-  { value: "98%",  label: "Clients satisfaits" },
-  { value: "24/7", label: "Support disponible" },
-];
+function useCountUp(target, duration = 1200) {
+  const [count, setCount] = useState(0);
+  const raf = useRef(null);
+  useEffect(() => {
+    if (target === 0) return;
+    const start = performance.now();
+    const step = (now) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) raf.current = requestAnimationFrame(step);
+      else setCount(target);
+    };
+    raf.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, duration]);
+  return count;
+}
+
+function StatCard({ value, suffix, label }) {
+  const animated = useCountUp(value);
+  return (
+    <div>
+      <p className="text-3xl font-extrabold text-teal-700">
+        {animated}{suffix}
+      </p>
+      <p className="text-sm text-gray-500 mt-0.5">{label}</p>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [spaces, setSpaces] = useState([]);
   const [search, setSearch] = useState("");
+  const [stats, setStats] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     API.get("/spaces?").then(({ data }) => setSpaces(data.slice(0, 6))).catch(() => {});
+    API.get("/stats").then(({ data }) => setStats(data)).catch(() => {});
   }, []);
 
   const handleSearch = (e) => {
@@ -103,12 +128,10 @@ export default function HomePage() {
       {/* ── Stats bar ── */}
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {STATS.map(({ value, label }) => (
-            <div key={label}>
-              <p className="text-3xl font-extrabold text-teal-700">{value}</p>
-              <p className="text-sm text-gray-500 mt-0.5">{label}</p>
-            </div>
-          ))}
+          <StatCard value={stats?.spaces ?? 0}       suffix="+"  label="Espaces disponibles" />
+          <StatCard value={stats?.events ?? 0}       suffix="+"  label="Événements organisés" />
+          <StatCard value={stats?.satisfaction ?? 0} suffix="%"  label="Clients satisfaits" />
+          <StatCard value={stats?.users ?? 0}        suffix=""   label="Utilisateurs inscrits" />
         </div>
       </div>
 
