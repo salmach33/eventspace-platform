@@ -30,11 +30,11 @@ Je suis votre assistant IA. Voici ce que je peux faire pour vous :
 Comment puis-je vous aider aujourd'hui ?`;
 
 const REQUEST_KEYWORDS = {
+  planning: ["comment", "conseil", "organisation", "organiser"],
   recommendation: [
     "recommand", "quelle salle", "salle pour", "reserver",
     "mariage", "personnes", "budget", "capacite", "disponible",
   ],
-  planning: ["comment", "conseil", "organisation", "organiser"],
   reviews: ["avis", "resume"],
   description: ["description", "decrire"],
 };
