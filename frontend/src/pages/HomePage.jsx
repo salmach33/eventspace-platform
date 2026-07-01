@@ -61,7 +61,10 @@ export default function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    API.get("/spaces?").then(({ data }) => setSpaces(data.slice(0, 6))).catch(() => {});
+    API.get("/spaces").then(({ data }) => {
+      const sorted = [...data].sort((a, b) => (b.averageRating || 0) - (a.averageRating || 0));
+      setSpaces(sorted.slice(0, 6));
+    }).catch(() => {});
     API.get("/stats").then(({ data }) => setStats(data)).catch(() => {});
   }, []);
 
@@ -167,7 +170,7 @@ export default function HomePage() {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h2 className="text-3xl font-bold text-gray-800">Espaces en vedette</h2>
-                <p className="text-gray-500 mt-1">Les espaces les mieux notés du moment</p>
+                <p className="text-gray-500 mt-1">Les espaces les mieux notés par nos clients</p>
               </div>
               <button
                 onClick={() => navigate("/spaces")}
