@@ -214,12 +214,44 @@ function generatePrompt(message, type) {
   switch (type) {
     case "planning":
       return `Tu es un expert en organisation d'événements. Question: ${message}. Donne des conseils pratiques.`;
-    case "reviews":
-      return `Résume les informations: ${message}`;
     case "description":
       return `Décris une salle: ${message}`;
     default:
       return message;
+  }
+}
+
+async function findSpaceByName(message) {
+  const msg = removeAccents(message.toLowerCase());
+  const spaces = await getSpacesFromCache();
+  return spaces.find((s) => msg.includes(removeAccents(s.title.toLowerCase())));
+}
+
+async function getReviewsSummary(message) {
+  try {
+    const matchedSpace = await findSpaceByName(message);
+    if (!matchedSpace) {
+      return "Je n'ai trouvé aucune salle correspondant à ce nom. Pouvez-vous préciser le nom exact de la salle ?";
+    }
+
+    const space = await Space.findById(matchedSpace._id).select("title reviews averageRating");
+    if (!space.reviews || space.reviews.length === 0) {
+      return `La salle "${space.title}" n'a pas encore reçu d'avis.`;
+    }
+
+    const reviewsText = space.reviews
+      .map((r) => `- Note ${r.rating}/5 : "${r.comment}"`)
+      .join("\n");
+
+    const prompt = `Voici les avis clients pour la salle "${space.title}" (note moyenne ${space.averageRating}/5) :
+${reviewsText}
+
+Résume ces avis en 3-4 phrases, en dégageant les points positifs et négatifs récurrents.`;
+
+    return await callOllama(prompt);
+  } catch (error) {
+    console.error("[Reviews Error]:", error.message);
+    return "Erreur lors de la récupération des avis.";
   }
 }
 
@@ -249,6 +281,8 @@ exports.chat = async (req, res) => {
     const response =
       type === "recommendation"
         ? await getRecommendationsWithData(message)
+        : type === "reviews"
+        ? await getReviewsSummary(message)
         : await callOllama(generatePrompt(message, type));
 
     res.json({ success: true, response, type });
